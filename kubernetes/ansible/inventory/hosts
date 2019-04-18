@@ -1,0 +1,16 @@
+[kube-all]
+kube-master1 ansible_host=3.83.144.196 private_ip=172.31.67.196
+kube-node1 ansible_host=3.84.40.141 private_ip=172.31.76.168
+kube-node2 ansible_host=3.83.134.168 private_ip=172.31.71.18
+
+[kube-masters]
+kube-master1 ansible_host=3.83.144.196
+
+[kube-nodes]
+kube-node1 ansible_host=3.84.40.141
+kube-node2 ansible_host=3.83.134.168
+
+[all:vars]
+ansible_user=ubuntu
+ansible_become=true
+ansible_python_interpreter=/usr/bin/python3
