@@ -20,6 +20,19 @@ data "aws_ami" "ubuntu_ami" {
   }
 }
 
+data "aws_ami" "centos_ami" {
+  most_recent = true
+  owners      = ["679593333241"]
+  filter {
+    name   = "name"
+    values = ["CentOS Linux 7*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 data "aws_ami" "f5_ami" {
   most_recent = true
   owners      = ["679593333241"]
@@ -66,6 +79,34 @@ resource "aws_instance" "kube-node2" {
   security_groups = ["${aws_security_group.kube_sg.name}"]
   tags = {
     Name = "kube-node2"
+  }
+}
+
+resource "aws_instance" "okd-master1" {
+  ami             = "${data.aws_ami.centos_ami.id}"
+  instance_type   = "t2.micro"
+  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  security_groups = ["${aws_security_group.okd_sg.name}"]
+  tags = {
+    Name = "okd-master1"
+  }
+}
+resource "aws_instance" "okd-node1" {
+  ami             = "${data.aws_ami.centos_ami.id}"
+  instance_type   = "t2.micro"
+  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  security_groups = ["${aws_security_group.okd_sg.name}"]
+  tags = {
+    Name = "okd-node1"
+  }
+}
+resource "aws_instance" "okd-node2" {
+  ami             = "${data.aws_ami.centos_ami.id}"
+  instance_type   = "t2.micro"
+  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  security_groups = ["${aws_security_group.okd_sg.name}"]
+  tags = {
+    Name = "okd-node2"
   }
 }
 
@@ -143,6 +184,30 @@ resource "aws_security_group" "kube_sg" {
     Name = "kube_sg"
   }
 }
+resource "aws_security_group" "okd_sg" {
+  name = "okd_sg"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.myIP.body)}/32"]
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["172.31.0.0/16"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "okd_sg"
+  }
+}
 
 # write out host file
 data "template_file" "inventory" {
@@ -173,14 +238,23 @@ resource "local_file" "save_inventory" {
 }
 
 output "kube-master1__public_dns" {
-    value = "${aws_instance.kube-master1.public_dns}"
-}
-output "kube-node1__public_dns" {
-    value = "${aws_instance.kube-node1.public_dns}"
-}
-output "kube-node2__public_dns" {
-    value = "${aws_instance.kube-node2.public_dns}"
+  value = "${aws_instance.bigip1.public_dns}"
 }
 output "bigip1__public_dns" {
-    value = "${aws_instance.bigip1.public_dns}"
+  value = "${aws_instance.kube-master1.public_dns}"
+}
+output "kube-node1__public_dns" {
+  value = "${aws_instance.kube-node1.public_dns}"
+}
+output "kube-node2__public_dns" {
+  value = "${aws_instance.kube-node2.public_dns}"
+}
+output "okd-master1__public_dns" {
+  value = "${aws_instance.okd-master1.public_dns}"
+}
+output "okd-node1__public_dns" {
+  value = "${aws_instance.okd-node1.public_dns}"
+}
+output "okd-node2__public_dns" {
+  value = "${aws_instance.okd-node2.public_dns}"
 }
