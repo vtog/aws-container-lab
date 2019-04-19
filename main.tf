@@ -9,7 +9,7 @@ data "http" "myIP" {
 
 resource "aws_instance" "kube-master1" {
   ami             = "ami-0a313d6098716f372" # Ubuntu 18.04 LTS AMD64
-  instance_type   = "t2.micro"
+  instance_type   = "t2.medium"
   key_name        = "${aws_key_pair.corp-deb-key.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
   tags = {
@@ -19,7 +19,7 @@ resource "aws_instance" "kube-master1" {
 
 resource "aws_instance" "kube-node1" {
   ami             = "ami-0a313d6098716f372" # Ubuntu 18.04 LTS AMD64
-  instance_type   = "t2.micro"
+  instance_type   = "t2.medium"
   key_name        = "${aws_key_pair.corp-deb-key.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
   tags = {
@@ -29,7 +29,7 @@ resource "aws_instance" "kube-node1" {
 
 resource "aws_instance" "kube-node2" {
   ami             = "ami-0a313d6098716f372" # Ubuntu 18.04 LTS AMD64
-  instance_type   = "t2.micro"
+  instance_type   = "t2.medium"
   key_name        = "${aws_key_pair.corp-deb-key.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
   tags = {
