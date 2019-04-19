@@ -7,8 +7,40 @@ data "http" "myIP" {
   url = "http://ipv4.icanhazip.com"
 }
 
+data "aws_ami" "ubuntu_ami" {
+  most_recent = true
+  owners      = ["099720109477"]
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+data "aws_ami" "f5_ami" {
+  most_recent = true
+  owners      = ["679593333241"]
+  filter {
+    name   = "name"
+    values = ["F5 BIGIP-14.1* PAYG-Best 25Mbps*"]
+  }
+}
+
+resource "aws_instance" "bigip1" {
+  ami             = "${data.aws_ami.f5_ami.id}"
+  instance_type   = "t2.medium"
+  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  security_groups = ["${aws_security_group.bigip_sg.name}"]
+  tags = {
+    Name = "bigip1"
+  }
+}
+
 resource "aws_instance" "kube-master1" {
-  ami             = "ami-0a313d6098716f372" # Ubuntu 18.04 LTS AMD64
+  ami             = "${data.aws_ami.ubuntu_ami.id}"
   instance_type   = "t2.medium"
   key_name        = "${aws_key_pair.corp-deb-key.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
@@ -18,7 +50,7 @@ resource "aws_instance" "kube-master1" {
 }
 
 resource "aws_instance" "kube-node1" {
-  ami             = "ami-0a313d6098716f372" # Ubuntu 18.04 LTS AMD64
+  ami             = "${data.aws_ami.ubuntu_ami.id}"
   instance_type   = "t2.medium"
   key_name        = "${aws_key_pair.corp-deb-key.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
@@ -28,7 +60,7 @@ resource "aws_instance" "kube-node1" {
 }
 
 resource "aws_instance" "kube-node2" {
-  ami             = "ami-0a313d6098716f372" # Ubuntu 18.04 LTS AMD64
+  ami             = "${data.aws_ami.ubuntu_ami.id}"
   instance_type   = "t2.medium"
   key_name        = "${aws_key_pair.corp-deb-key.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
@@ -40,6 +72,37 @@ resource "aws_instance" "kube-node2" {
 resource "aws_key_pair" "corp-deb-key" {
   key_name   = "corp-deb-key"
   public_key = "${file("~/.ssh/id_rsa.pub")}"
+}
+
+resource "aws_security_group" "bigip_sg" {
+  name = "bigip_sg"
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.myIP.body)}/32"]
+  }
+  ingress {
+    from_port   = 8443
+    to_port     = 8443
+    protocol    ="tcp"
+    cidr_blocks = ["${chomp(data.http.myIP.body)}/32"]
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["172.31.0.0/16"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "bigip_sg"
+  }
 }
 
 resource "aws_security_group" "kube_sg" {
@@ -104,4 +167,6 @@ output "kube-node1__public_dns" {
 output "kube-node2__public_dns" {
     value = "${aws_instance.kube-node2.public_dns}"
 }
-
+output "bigip1__public_dns" {
+    value = "${aws_instance.bigip1.public_dns}"
+}
