@@ -237,10 +237,10 @@ resource "local_file" "save_inventory" {
   filename = "./kubernetes/ansible/inventory.ini"
 }
 
-output "kube-master1__public_dns" {
+output "bigip1__public_dns" {
   value = "${aws_instance.bigip1.public_dns}"
 }
-output "bigip1__public_dns" {
+output "kube-master1__public_dns" {
   value = "${aws_instance.kube-master1.public_dns}"
 }
 output "kube-node1__public_dns" {
