@@ -88,6 +88,20 @@ resource "aws_security_group" "bigip_sg" {
     protocol    ="tcp"
     cidr_blocks = ["${chomp(data.http.myIP.body)}/32"]
   }
+  name = "bigip_sg"
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.myIP.body)}/32"]
+  }
+  name = "bigip_sg"
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.myIP.body)}/32"]
+  }
   ingress {
     from_port   = 0
     to_port     = 0
