@@ -1,0 +1,16 @@
+---
+
+- name: Prep CentOS
+  hosts: okd-all
+  become: yes
+  tasks:
+#  - import_tasks: update-hosts.yaml
+#  - import_tasks: update-centos.yaml
+  - import_tasks: prep-centos-all.yaml
+
+- name: Prep CentOS
+  hosts: okd-masters
+  become: yes
+  tasks:
+  - import_tasks: prep-centos-master.yaml
+

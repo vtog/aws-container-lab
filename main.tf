@@ -209,7 +209,7 @@ resource "aws_security_group" "okd_sg" {
   }
 }
 
-# write out host file
+# write out kube inventory
 data "template_file" "inventory" {
 template = <<EOF
 [kube-all]
@@ -235,6 +235,34 @@ resource "local_file" "save_inventory" {
   depends_on = ["data.template_file.inventory"]
   content = "${data.template_file.inventory.rendered}"
   filename = "./kubernetes/ansible/inventory.ini"
+}
+
+# write out okd inventory
+data "template_file" "okd-inventory" {
+template = <<EOF
+[okd-all]
+${aws_instance.okd-master1.tags.Name} ansible_host=${aws_instance.okd-master1.public_ip} private_ip=${aws_instance.okd-master1.private_ip}
+${aws_instance.okd-node1.tags.Name} ansible_host=${aws_instance.okd-node1.public_ip} private_ip=${aws_instance.okd-node1.private_ip}
+${aws_instance.okd-node2.tags.Name} ansible_host=${aws_instance.okd-node2.public_ip} private_ip=${aws_instance.okd-node2.private_ip}
+
+[okd-masters]
+${aws_instance.okd-master1.tags.Name} ansible_host=${aws_instance.okd-master1.public_ip}
+
+[okd-nodes]
+${aws_instance.okd-node1.tags.Name} ansible_host=${aws_instance.okd-node1.public_ip}
+${aws_instance.okd-node2.tags.Name} ansible_host=${aws_instance.okd-node2.public_ip}
+
+[all:vars]
+ansible_user=centos
+ansible_become=true
+ansible_python_interpreter=/usr/bin/python3
+EOF
+}
+
+resource "local_file" "save_okd-inventory" {
+  depends_on = ["data.template_file.okd-inventory"]
+  content = "${data.template_file.okd-inventory.rendered}"
+  filename = "./openshift/ansible/inventory.ini"
 }
 
 output "bigip1__public_dns" {

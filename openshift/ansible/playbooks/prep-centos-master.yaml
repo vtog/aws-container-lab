@@ -1,0 +1,26 @@
+---
+
+- name: Create SSH key
+  openssh_keypair:
+    path: /home/centos/.ssh
+
+- name: Install epel-release
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install ansible
+  yum:
+    name: ansible
+    state: present
+
+- name: Remove epel-release
+  yum:
+    name: epel-release
+    state: absent
+
+- name: git openshfit-ansible repo
+  git:
+    repo: https://github.com/openshift/openshift-ansible.git
+    dest: /home/centos/openshift-ansible
+    version: release-3.11

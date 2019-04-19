@@ -1,0 +1,12 @@
+---
+  
+- name: Update All Packages
+  yum:
+    name: "*"
+    update_cache: yes
+    state: latest
+  register: reboot_node
+
+- name: Reboot system if required
+  when: reboot_node is changed
+  reboot:
