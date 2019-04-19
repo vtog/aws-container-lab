@@ -1,5 +1,9 @@
 ---
 
+- name: Update VM hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 - name: Add all kubernete nodes to /etc/hosts
   lineinfile:
     dest: /etc/hosts
