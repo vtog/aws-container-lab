@@ -1,9 +1,4 @@
 
-resource "aws_key_pair" "corp-deb-key" {
-  key_name   = "corp-deb-key"
-  public_key = "${file("~/.ssh/id_rsa.pub")}"
-}
-
 data "aws_ami" "f5_ami" {
   most_recent = true
   owners      = ["679593333241"]
@@ -15,8 +10,8 @@ data "aws_ami" "f5_ami" {
 
 resource "aws_instance" "bigip1" {
   ami             = "${data.aws_ami.f5_ami.id}"
-  instance_type   = "t2.medium"
-  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  instance_type   = "${var.instance_type}"
+  key_name        = "${var.ssh_key}"
   security_groups = ["${aws_security_group.bigip_sg.name}"]
   tags = {
     Name = "bigip1"

@@ -1,9 +1,4 @@
 
-resource "aws_key_pair" "corp-deb-key" {
-  key_name   = "corp-deb-key"
-  public_key = "${file("~/.ssh/id_rsa.pub")}"
-}
-
 data "aws_ami" "centos_ami" {
   most_recent = true
   owners      = ["679593333241"]
@@ -19,8 +14,8 @@ data "aws_ami" "centos_ami" {
 
 resource "aws_instance" "okd-master1" {
   ami             = "${data.aws_ami.centos_ami.id}"
-  instance_type   = "t2.micro"
-  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  instance_type   = "${var.instance_type}"
+  key_name        = "${var.ssh_key}"
   security_groups = ["${aws_security_group.okd_sg.name}"]
   tags = {
     Name = "okd-master1"
@@ -28,8 +23,8 @@ resource "aws_instance" "okd-master1" {
 }
 resource "aws_instance" "okd-node1" {
   ami             = "${data.aws_ami.centos_ami.id}"
-  instance_type   = "t2.micro"
-  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  instance_type   = "${var.instance_type}"
+  key_name        = "${var.ssh_key}"
   security_groups = ["${aws_security_group.okd_sg.name}"]
   tags = {
     Name = "okd-node1"
@@ -37,8 +32,8 @@ resource "aws_instance" "okd-node1" {
 }
 resource "aws_instance" "okd-node2" {
   ami             = "${data.aws_ami.centos_ami.id}"
-  instance_type   = "t2.micro"
-  key_name        = "${aws_key_pair.corp-deb-key.key_name}"
+  instance_type   = "${var.instance_type}"
+  key_name        = "${var.ssh_key}"
   security_groups = ["${aws_security_group.okd_sg.name}"]
   tags = {
     Name = "okd-node2"
