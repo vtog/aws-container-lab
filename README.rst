@@ -8,7 +8,7 @@ AWS EC2 instances:
 - 3x Kubernetes Cluster (1x Master 2x Node)
 - 3x OpenShift Cluster (1x Master 2x Node)
 
-Several required assumptions are made:
+Severalassumptions are made:
 
 - AWS Account
 - Linux CLI (For my testing I used Debian)
@@ -17,7 +17,12 @@ Several required assumptions are made:
   #. ~/.ssh/id_rsa & id_rsa.pub
   #. git, terraform, and ansible installed
 
-- Familiarity with F5 Big-IP, Kubernetes, and OpenShift
+- Familiarity with
+
+   #. Terraform
+   #. Big-IP
+   #. Kubernetes
+   #. OpenShift
 
 The following steps build the AWS EC2 instances and the kubernetes cluster.
 
@@ -42,3 +47,10 @@ commands:
 
    sudo htpasswd -b /etc/origin/master/htpasswd centos centos
    oc adm policy add-cluster-role-to-user cluster-admin centos
+
+To completly remove the AWS instances and supporting objects, change directory
+to the root of this cloned repo and run the following command:
+
+.. code-block:: bash
+
+   terraform destroy
