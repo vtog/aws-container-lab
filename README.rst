@@ -1,16 +1,16 @@
 AWS Container Lab
 =================
 
-The purpose of this repo is to give a set of scripts that will deploy several
-AWS EC2 instances:
+The purpose of this repo is to give a set of scripts that deploy several AWS
+EC2 instances:
 
 - 1x F5 Big-IP (PAYG)
 - 3x Kubernetes Cluster (1x Master 2x Node)
 - 3x OpenShift Cluster (1x Master 2x Node)
 
-Severalassumptions are made:
+Several assumptions are made:
 
-- AWS Account
+- An active AWS Account, with proper IAM configuration.
 - Linux CLI (For my testing I used Debian)
 
   #. ~/.aws/credentials (properly configured)
