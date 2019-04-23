@@ -30,7 +30,7 @@ The following steps build the AWS EC2 instances and the kubernetes cluster.
    ansible-playbook playbooks/deploy-okd.yaml
 
 Additional steps are required for OpenShift. Once the playbooks from the
-previous steps are finished connect to "okd-master1" and run the following
+previous steps are finished connect to **okd-master1** and run the following
 commands:
 
 .. code-block:: bash
