@@ -65,8 +65,8 @@ resource "aws_security_group" "okd_sg" {
   }
 }
 
-# write out okd inventory
-data "template_file" "okd-inventory" {
+# write out centos inventory
+data "template_file" "inventory" {
 template = <<EOF
 [okd-all]
 ${aws_instance.okd-master1.tags.Name} ansible_host=${aws_instance.okd-master1.public_ip} private_ip=${aws_instance.okd-master1.private_ip}
@@ -82,15 +82,62 @@ ${aws_instance.okd-node2.tags.Name} ansible_host=${aws_instance.okd-node2.public
 
 [all:vars]
 ansible_user=centos
-ansible_become=true
-ansible_python_interpreter=/usr/bin/python3
+ansible_python_interpreter=/usr/bin/python2
 EOF
 }
 
-resource "local_file" "save_okd-inventory" {
-  depends_on = ["data.template_file.okd-inventory"]
-  content = "${data.template_file.okd-inventory.rendered}"
+# write out okd inventory
+data "template_file" "inventory-okd" {
+template = <<EOF
+[OSEv3:children]
+masters
+nodes
+etcd
+
+[masters]
+${aws_instance.okd-master1.tags.Name}
+
+[etcd]
+${aws_instance.okd-master1.tags.Name}
+
+[nodes]
+${aws_instance.okd-master1.tags.Name} openshift_public_hostname=${aws_instance.okd-master1.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-master-infra"
+${aws_instance.okd-node1.tags.Name} openshift_public_hostname=${aws_instance.okd-node1.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-compute"
+${aws_instance.okd-node2.tags.Name} openshift_public_hostname=${aws_instance.okd-node2.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-compute"
+
+[OSEv3:vars]
+ansible_ssh_user=centos
+ansible_become=true
+enable_excluders=false
+enable_docker_excluder=false
+ansible_service_broker_install=false
+
+containerized=true
+openshift_disable_check=disk_availability,memory_availability,docker_storage,docker_image_ava
+
+deployment_type=origin
+openshift_deployment_type=origin
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+
+openshift_master_api_port=8443
+openshift_master_console_port=8443
+
+openshift_metrics_install_metrics=false
+openshift_logging_install_logging=false
+EOF
+}
+
+resource "local_file" "save_inventory" {
+  depends_on = ["data.template_file.inventory"]
+  content = "${data.template_file.inventory.rendered}"
   filename = "./openshift/ansible/inventory.ini"
+}
+
+resource "local_file" "save_inventory-okd" {
+  depends_on = ["data.template_file.inventory-okd"]
+  content = "${data.template_file.inventory-okd.rendered}"
+  filename = "./openshift/ansible/inventory-okd.ini"
 }
 
 output "okd-master1__public_dns" {

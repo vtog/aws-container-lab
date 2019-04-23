@@ -84,7 +84,6 @@ ${aws_instance.kube-node2.tags.Name} ansible_host=${aws_instance.kube-node2.publ
 
 [all:vars]
 ansible_user=ubuntu
-ansible_become=true
 ansible_python_interpreter=/usr/bin/python3
 EOF
 }

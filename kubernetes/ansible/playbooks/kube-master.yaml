@@ -1,5 +1,12 @@
 ---
 
+- name: Copy private SSH key to user "ubuntu"
+  become: no
+  copy:
+    src: ~/.ssh/id_rsa
+    dest: ~/.ssh/id_rsa
+    mode: 0600
+
 - name: Reset the kubernetes master
   shell: |
     kubeadm reset --force

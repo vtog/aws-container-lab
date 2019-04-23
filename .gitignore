@@ -1,4 +1,5 @@
 .vscode
 .terraform*
 terraform*
-inventory.ini
+.inventory*
+inventory*

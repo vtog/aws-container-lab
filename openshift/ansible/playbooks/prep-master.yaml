@@ -1,0 +1,47 @@
+---
+
+- name: Copy private SSH key to user "centos"
+  become: no
+  copy:
+    src: ~/.ssh/id_rsa
+    dest: ~/.ssh/id_rsa
+    mode: 0600
+
+- name: Copy OKD inventory file to user "centos"
+  become: no
+  copy:
+    src: ../inventory-okd.ini
+    dest: ~/inventory.ini
+    mode: 0600
+
+- name: Install epel-release
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install ansible
+  yum:
+    name: ansible
+    state: present
+
+- name: Remove epel-release
+  yum:
+    name: epel-release
+    state: absent
+
+- name: git openshfit-ansible repo
+  become: no
+  git:
+    repo: https://github.com/openshift/openshift-ansible.git
+    dest: /home/centos/openshift-ansible
+    version: release-3.11
+
+- name: Create OpenShift AUTH Directory
+  file:
+    path: /etc/origin/master/
+    state: directory
+
+- name: Prep OpenShift AUTH
+  file:
+    path: /etc/origin/master/htpasswd
+    state: touch
