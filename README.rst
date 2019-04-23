@@ -19,10 +19,10 @@ Severalassumptions are made:
 
 - Familiarity with
 
-   #. Terraform
-   #. Big-IP
-   #. Kubernetes
-   #. OpenShift
+  #. Terraform
+  #. Big-IP
+  #. Kubernetes
+  #. OpenShift
 
 The following steps build the AWS EC2 instances and the kubernetes cluster.
 
