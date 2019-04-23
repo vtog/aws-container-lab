@@ -8,18 +8,19 @@ AWS EC2 instances:
 - 3x Kubernetes Cluster (1x Master 2x Node)
 - 3x OpenShift Cluster (1x Master 2x Node)
 
-Several assumptions are required:
+Several required assumptions are made:
 
 - AWS Account
 - Linux CLI (For my testing I used Debian)
 
-  #. ~/.aws/credentials
+  1. ~/.aws/credentials
   #. ~/.ssh/id_rsa & id_rsa.pub
   #. git installed
   #. terraform installed
   #. ansible installed
 
-Setup:
+The following commands will setup the AWS EC2 instances and the kubernetes
+cluster.  Additional steps are required for OpenShift from the okd-master
 
 .. code-block:: bash
 
@@ -30,4 +31,15 @@ Setup:
    ansible-playbook playbooks/deploy-kube.yaml
    cd ../../openshift/ansible
    ansible-playbook playbooks/deploy-okd.yaml
-    
+
+Once the playbooks are finished connect to the "okd-master1" and run the
+following commands:
+
+.. code-block:: bash
+
+   ansible-playbook -i $HOME/agilitydocs/openshift/ansible/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml
+   ansible-playbook -i $HOME/agilitydocs/openshift/ansible/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml
+
+   sudo htpasswd -b /etc/origin/master/htpasswd centos centos
+   oc adm policy add-cluster-role-to-user cluster-admin centos
+   
