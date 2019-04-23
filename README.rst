@@ -17,6 +17,8 @@ Several required assumptions are made:
   #. ~/.ssh/id_rsa & id_rsa.pub
   #. git, terraform, and ansible installed
 
+- Familiarity with F5 Big-IP, Kubernetes, and OpenShift
+
 The following steps build the AWS EC2 instances and the kubernetes cluster.
 
 .. code-block:: bash
