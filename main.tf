@@ -3,30 +3,32 @@ provider "aws" {
   region  = "${var.aws_region}"
 }
 
-# Set default SSH Key
-resource "aws_key_pair" "corp-deb-key" {
-  key_name   = "corp-deb-key"
-  public_key = "${file("~/.ssh/id_rsa.pub")}"
+# Set default SSH key pair
+resource "aws_key_pair" "auth" {
+  key_name   = "${var.key_name}"
+  public_key = "${file(var.public_key_path)}"
 }
 
 # Deploy Big-IP
-#module "bigip" {
-#  source  = "./bigip"
-#  myIP    = "${chomp(data.http.myIP.body)}/32"
-#  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
-#}
+module "bigip" {
+  source        = "./bigip"
+  myIP          = "${chomp(data.http.myIP.body)}/32"
+  key_name      = "${var.key_name}"
+  instance_type = "${var.bigip_instance_type}"
+}
 
 # Deploy Kubernetes
 module "kube" {
-  source  = "./kubernetes"
-  myIP    = "${chomp(data.http.myIP.body)}/32"
-  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
+  source        = "./kubernetes"
+  myIP          = "${chomp(data.http.myIP.body)}/32"
+  key_name      = "${var.key_name}"
+  instance_type = "${var.kube_instance_type}"
 }
 
 # Deploy OpenShift
-#module "okd" {
-#  source  = "./openshift"
-#  myIP    = "${chomp(data.http.myIP.body)}/32"
-#  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
-#}
-
+module "okd" {
+  source        = "./openshift"
+  myIP          = "${chomp(data.http.myIP.body)}/32"
+  key_name      = "${var.key_name}"
+  instance_type = "${var.okd_instance_type}"
+}

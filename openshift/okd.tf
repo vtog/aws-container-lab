@@ -16,7 +16,7 @@ data "aws_ami" "centos_ami" {
 resource "aws_instance" "okd-master1" {
   ami             = "${data.aws_ami.centos_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.okd_sg.name}"]
 
   tags = {
@@ -27,7 +27,7 @@ resource "aws_instance" "okd-master1" {
 resource "aws_instance" "okd-node1" {
   ami             = "${data.aws_ami.centos_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.okd_sg.name}"]
 
   tags = {
@@ -38,7 +38,7 @@ resource "aws_instance" "okd-node1" {
 resource "aws_instance" "okd-node2" {
   ami             = "${data.aws_ami.centos_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.okd_sg.name}"]
 
   tags = {

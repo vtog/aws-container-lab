@@ -11,7 +11,7 @@ data "aws_ami" "f5_ami" {
 resource "aws_instance" "bigip1" {
   ami             = "${data.aws_ami.f5_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.bigip_sg.name}"]
 
   tags = {

@@ -16,7 +16,7 @@ data "aws_ami" "ubuntu_ami" {
 resource "aws_instance" "kube-master1" {
   ami             = "${data.aws_ami.ubuntu_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
 
   tags = {
@@ -27,7 +27,7 @@ resource "aws_instance" "kube-master1" {
 resource "aws_instance" "kube-node1" {
   ami             = "${data.aws_ami.ubuntu_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
 
   tags = {
@@ -38,7 +38,7 @@ resource "aws_instance" "kube-node1" {
 resource "aws_instance" "kube-node2" {
   ami             = "${data.aws_ami.ubuntu_ami.id}"
   instance_type   = "${var.instance_type}"
-  key_name        = "${var.ssh_key}"
+  key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.kube_sg.name}"]
 
   tags = {
