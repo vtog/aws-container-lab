@@ -14,10 +14,11 @@ data "aws_ami" "ubuntu_ami" {
 }
 
 resource "aws_instance" "kube-master1" {
-  ami             = "${data.aws_ami.ubuntu_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.kube_sg.name}"]
+  ami                    = "${data.aws_ami.ubuntu_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.kube_sg.id}"]
+  subnet_id              = "${var.vpc_subnet}"
 
   tags = {
     Name = "kube-master1"
@@ -25,10 +26,11 @@ resource "aws_instance" "kube-master1" {
 }
 
 resource "aws_instance" "kube-node1" {
-  ami             = "${data.aws_ami.ubuntu_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.kube_sg.name}"]
+  ami                    = "${data.aws_ami.ubuntu_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.kube_sg.id}"]
+  subnet_id              = "${var.vpc_subnet}"
 
   tags = {
     Name = "kube-node1"
@@ -36,10 +38,11 @@ resource "aws_instance" "kube-node1" {
 }
 
 resource "aws_instance" "kube-node2" {
-  ami             = "${data.aws_ami.ubuntu_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.kube_sg.name}"]
+  ami                    = "${data.aws_ami.ubuntu_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.kube_sg.id}"]
+  subnet_id              = "${var.vpc_subnet}"
 
   tags = {
     Name = "kube-node2"
@@ -47,7 +50,8 @@ resource "aws_instance" "kube-node2" {
 }
 
 resource "aws_security_group" "kube_sg" {
-  name = "kube_sg"
+  name   = "kube_sg"
+  vpc_id = "${var.vpc_id}"
 
   ingress {
     from_port   = 22
@@ -60,7 +64,7 @@ resource "aws_security_group" "kube_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["172.31.0.0/16"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   egress {
@@ -102,14 +106,9 @@ resource "local_file" "save_inventory" {
   filename   = "./kubernetes/ansible/inventory.ini"
 }
 
-output "kube-master1__public_dns" {
-  value = "${aws_instance.kube-master1.public_dns}"
-}
-
-output "kube-node1__public_dns" {
-  value = "${aws_instance.kube-node1.public_dns}"
-}
-
-output "kube-node2__public_dns" {
-  value = "${aws_instance.kube-node2.public_dns}"
+#----- Run Ansible Playbook -----
+resource "null_resource" "ansible" {
+  provisioner "local-exec" {
+    command = "aws ec2 wait instance-running --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile default && cd ./kubernetes/ansible && ansible-playbook ./playbooks/deploy-kube.yaml"
+  }
 }
