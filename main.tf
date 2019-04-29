@@ -1,10 +1,6 @@
 provider "aws" {
-  region = "${var.aws_region}"
-}
-
-# Get My Public IP
-data "http" "myIP" {
-  url = "http://ipv4.icanhazip.com"
+  profile = "${var.aws_profile}"
+  region  = "${var.aws_region}"
 }
 
 # Set default SSH Key
@@ -14,11 +10,11 @@ resource "aws_key_pair" "corp-deb-key" {
 }
 
 # Deploy Big-IP
-module "bigip" {
-  source  = "./bigip"
-  myIP    = "${chomp(data.http.myIP.body)}/32"
-  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
-}
+#module "bigip" {
+#  source  = "./bigip"
+#  myIP    = "${chomp(data.http.myIP.body)}/32"
+#  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
+#}
 
 # Deploy Kubernetes
 module "kube" {
@@ -28,8 +24,9 @@ module "kube" {
 }
 
 # Deploy OpenShift
-module "okd" {
-  source  = "./openshift"
-  myIP    = "${chomp(data.http.myIP.body)}/32"
-  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
-}
+#module "okd" {
+#  source  = "./openshift"
+#  myIP    = "${chomp(data.http.myIP.body)}/32"
+#  ssh_key = "${aws_key_pair.corp-deb-key.key_name}"
+#}
+
