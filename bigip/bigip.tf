@@ -1,4 +1,4 @@
-data "aws_ami" "f5-v14.1_ami" {
+data "aws_ami" "f5-v14_ami" {
   most_recent = true
   owners      = ["679593333241"]
 
@@ -8,7 +8,7 @@ data "aws_ami" "f5-v14.1_ami" {
   }
 }
 
-data "aws_ami" "f5-v13.1_ami" {
+data "aws_ami" "f5-v13_ami" {
   most_recent = true
   owners      = ["679593333241"]
 
@@ -18,7 +18,7 @@ data "aws_ami" "f5-v13.1_ami" {
   }
 }
 
-data "aws_ami" "f5-v12.1_ami" {
+data "aws_ami" "f5-v12_ami" {
   most_recent = true
   owners      = ["679593333241"]
 
@@ -29,7 +29,7 @@ data "aws_ami" "f5-v12.1_ami" {
 }
 
 resource "aws_instance" "bigip1" {
-  ami                    = "${data.aws_ami.f5-v14.1_ami.id}"
+  ami                    = "${data.aws_ami.f5-v14_ami.id}"
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.bigip_sg.id}"]
