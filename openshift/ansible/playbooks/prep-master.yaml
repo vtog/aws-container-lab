@@ -14,6 +14,13 @@
     dest: ~/inventory.ini
     mode: 0600
 
+- name: Copy OKD ansible config file to user "centos"
+  become: no
+  copy:
+    src: ../ansible.cfg
+    dest: ~/ansible.cfg
+    mode: 0600
+
 - name: Install epel-release
   yum:
     name: epel-release
