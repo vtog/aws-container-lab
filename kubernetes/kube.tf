@@ -109,6 +109,6 @@ resource "local_file" "save_inventory" {
 #----- Run Ansible Playbook -----
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
-    command = "aws ec2 wait instance-running --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile default && cd ./kubernetes/ansible && ansible-playbook ./playbooks/deploy-kube.yaml"
+    command = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile default && cd ./kubernetes/ansible && ansible-playbook ./playbooks/deploy-kube.yaml"
   }
 }
