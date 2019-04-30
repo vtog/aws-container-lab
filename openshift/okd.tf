@@ -14,10 +14,11 @@ data "aws_ami" "centos_ami" {
 }
 
 resource "aws_instance" "okd-master1" {
-  ami             = "${data.aws_ami.centos_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.okd_sg.name}"]
+  ami                    = "${data.aws_ami.centos_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
+  subnet_id              = "${var.vpc_subnet[0]}"
 
   tags = {
     Name = "okd-master1"
@@ -25,10 +26,11 @@ resource "aws_instance" "okd-master1" {
 }
 
 resource "aws_instance" "okd-node1" {
-  ami             = "${data.aws_ami.centos_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.okd_sg.name}"]
+  ami                    = "${data.aws_ami.centos_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
+  subnet_id              = "${var.vpc_subnet[0]}"
 
   tags = {
     Name = "okd-node1"
@@ -36,10 +38,11 @@ resource "aws_instance" "okd-node1" {
 }
 
 resource "aws_instance" "okd-node2" {
-  ami             = "${data.aws_ami.centos_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.okd_sg.name}"]
+  ami                    = "${data.aws_ami.centos_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
+  subnet_id              = "${var.vpc_subnet[1]}"
 
   tags = {
     Name = "okd-node2"
@@ -48,6 +51,7 @@ resource "aws_instance" "okd-node2" {
 
 resource "aws_security_group" "okd_sg" {
   name = "okd_sg"
+  vpc_id = "${var.vpc_id}"
 
   ingress {
     from_port   = 22
@@ -60,7 +64,7 @@ resource "aws_security_group" "okd_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["172.31.0.0/16"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   egress {
@@ -150,14 +154,9 @@ resource "local_file" "save_inventory-okd" {
   filename   = "./openshift/ansible/inventory-okd.ini"
 }
 
-output "okd-master1__public_dns" {
-  value = "${aws_instance.okd-master1.public_dns}"
-}
-
-output "okd-node1__public_dns" {
-  value = "${aws_instance.okd-node1.public_dns}"
-}
-
-output "okd-node2__public_dns" {
-  value = "${aws_instance.okd-node2.public_dns}"
+#----- Run Ansible Playbook -----
+resource "null_resource" "ansible" {
+  provisioner "local-exec" {
+    command = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id} --profile default && cd ./openshift/ansible && ansible-playbook ./playbooks/deploy-okd.yaml"
+  }
 }

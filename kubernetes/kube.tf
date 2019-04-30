@@ -18,7 +18,7 @@ resource "aws_instance" "kube-master1" {
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.kube_sg.id}"]
-  subnet_id              = "${var.vpc_subnet}"
+  subnet_id              = "${var.vpc_subnet[0]}"
 
   tags = {
     Name = "kube-master1"
@@ -30,7 +30,7 @@ resource "aws_instance" "kube-node1" {
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.kube_sg.id}"]
-  subnet_id              = "${var.vpc_subnet}"
+  subnet_id              = "${var.vpc_subnet[0]}"
 
   tags = {
     Name = "kube-node1"
@@ -42,7 +42,7 @@ resource "aws_instance" "kube-node2" {
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.kube_sg.id}"]
-  subnet_id              = "${var.vpc_subnet}"
+  subnet_id              = "${var.vpc_subnet[1]}"
 
   tags = {
     Name = "kube-node2"

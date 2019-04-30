@@ -29,6 +29,13 @@
     name: epel-release
     state: absent
 
+- name: git Agility Container Lab repo
+  become: no
+  git:
+    repo: https://github.com/f5devcentral/f5-agility-labs-containers.git
+    dest: /home/centos/agilitydocs
+    version: master
+
 - name: git openshfit-ansible repo
   become: no
   git:
