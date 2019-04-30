@@ -9,10 +9,11 @@ data "aws_ami" "f5_ami" {
 }
 
 resource "aws_instance" "bigip1" {
-  ami             = "${data.aws_ami.f5_ami.id}"
-  instance_type   = "${var.instance_type}"
-  key_name        = "${var.key_name}"
-  security_groups = ["${aws_security_group.bigip_sg.name}"]
+  ami                    = "${data.aws_ami.f5_ami.id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.bigip_sg.id}"]
+  subnet_id              = "${var.vpc_subnet[1]}"
 
   tags = {
     Name = "bigip1"
@@ -36,16 +37,12 @@ resource "aws_security_group" "bigip_sg" {
     cidr_blocks = ["${var.myIP}"]
   }
 
-  name = "bigip_sg"
-
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["${var.myIP}"]
   }
-
-  name = "bigip_sg"
 
   ingress {
     from_port   = 443
@@ -58,7 +55,7 @@ resource "aws_security_group" "bigip_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["172.31.0.0/16"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   egress {
@@ -71,8 +68,4 @@ resource "aws_security_group" "bigip_sg" {
   tags = {
     Name = "bigip_sg"
   }
-}
-
-output "bigip1__public_dns" {
-  value = "${aws_instance.bigip1.public_dns}"
 }

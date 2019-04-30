@@ -50,7 +50,7 @@ resource "aws_instance" "okd-node2" {
 }
 
 resource "aws_security_group" "okd_sg" {
-  name = "okd_sg"
+  name   = "okd_sg"
   vpc_id = "${var.vpc_id}"
 
   ingress {

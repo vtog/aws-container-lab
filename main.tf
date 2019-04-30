@@ -137,12 +137,15 @@ resource "aws_key_pair" "lab_auth" {
 }
 
 #----- Deploy Big-IP -----
-#module "bigip" {
-#  source        = "./bigip"
-#  myIP          = "${chomp(data.http.myIP.body)}/32"
-#  key_name      = "${var.key_name}"
-#  instance_type = "${var.bigip_instance_type}"
-#}
+module "bigip" {
+  source        = "./bigip"
+  myIP          = "${chomp(data.http.myIP.body)}/32"
+  key_name      = "${var.key_name}"
+  instance_type = "${var.bigip_instance_type}"
+  vpc_id        = "${aws_vpc.lab_vpc.id}"
+  vpc_cidr      = "${var.vpc_cidr}"
+  vpc_subnet    = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}"]
+}
 
 #----- Deploy Kubernetes -----
 module "kube" {
