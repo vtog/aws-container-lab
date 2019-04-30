@@ -1,15 +1,35 @@
-data "aws_ami" "f5_ami" {
+data "aws_ami" "f5-v14.1_ami" {
   most_recent = true
   owners      = ["679593333241"]
 
   filter {
     name   = "name"
-    values = ["F5 BIGIP-14.1* PAYG-Best 25Mbps*"]
+    values = ["F5 BIGIP-14.1* PAYG-Best 25M*"]
+  }
+}
+
+data "aws_ami" "f5-v13.1_ami" {
+  most_recent = true
+  owners      = ["679593333241"]
+
+  filter {
+    name   = "name"
+    values = ["F5 Networks BIGIP-13.1* PAYG - Best 25M*"]
+  }
+}
+
+data "aws_ami" "f5-v12.1_ami" {
+  most_recent = true
+  owners      = ["679593333241"]
+
+  filter {
+    name   = "name"
+    values = ["F5 Networks Licensed Hourly BIGIP-12.1* Best 25M*"]
   }
 }
 
 resource "aws_instance" "bigip1" {
-  ami                    = "${data.aws_ami.f5_ami.id}"
+  ami                    = "${data.aws_ami.f5-v14.1_ami.id}"
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.bigip_sg.id}"]
