@@ -20,6 +20,10 @@ resource "aws_instance" "okd-master1" {
   vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
   subnet_id              = "${var.vpc_subnet[0]}"
 
+  root_block_device {
+    delete_on_termination = true
+  }
+
   tags = {
     Name = "okd-master1"
   }
@@ -32,6 +36,10 @@ resource "aws_instance" "okd-node1" {
   vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
   subnet_id              = "${var.vpc_subnet[0]}"
 
+  root_block_device {
+    delete_on_termination = true
+  }
+
   tags = {
     Name = "okd-node1"
   }
@@ -43,6 +51,10 @@ resource "aws_instance" "okd-node2" {
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
   subnet_id              = "${var.vpc_subnet[1]}"
+
+  root_block_device {
+    delete_on_termination = true
+  }
 
   tags = {
     Name = "okd-node2"
