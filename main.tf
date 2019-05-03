@@ -142,31 +142,35 @@ module "bigip" {
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.bigip_instance_type}"
+  bigip_count   = "${var.bigip_count}"
+  bigip_admin   = "${var.bigip_admin}"
+  do_rpm_url    = "${var.do_rpm_url}"
+  as3_rpm_url   = "${var.as3_rpm_url}"
   vpc_id        = "${aws_vpc.lab_vpc.id}"
   vpc_cidr      = "${var.vpc_cidr}"
   vpc_subnet    = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.internal1_subnet.id}"]
 }
 
 #----- Deploy Kubernetes -----
-module "kube" {
-  source        = "./kubernetes"
-  myIP          = "${chomp(data.http.myIP.body)}/32"
-  key_name      = "${var.key_name}"
-  instance_type = "${var.kube_instance_type}"
-  vpc_id        = "${aws_vpc.lab_vpc.id}"
-  vpc_cidr      = "${var.vpc_cidr}"
-  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
-}
+#module "kube" {
+#  source        = "./kubernetes"
+#  myIP          = "${chomp(data.http.myIP.body)}/32"
+#  key_name      = "${var.key_name}"
+#  instance_type = "${var.kube_instance_type}"
+#  vpc_id        = "${aws_vpc.lab_vpc.id}"
+#  vpc_cidr      = "${var.vpc_cidr}"
+#  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
+#}
 
 
 ##----- Deploy OpenShift -----
-module "okd" {
-  source        = "./openshift"
-  myIP          = "${chomp(data.http.myIP.body)}/32"
-  key_name      = "${var.key_name}"
-  instance_type = "${var.okd_instance_type}"
-  vpc_id        = "${aws_vpc.lab_vpc.id}"
-  vpc_cidr      = "${var.vpc_cidr}"
-  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
-}
+#module "okd" {
+#  source        = "./openshift"
+#  myIP          = "${chomp(data.http.myIP.body)}/32"
+#  key_name      = "${var.key_name}"
+#  instance_type = "${var.okd_instance_type}"
+#  vpc_id        = "${aws_vpc.lab_vpc.id}"
+#  vpc_cidr      = "${var.vpc_cidr}"
+#  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
+#}
 

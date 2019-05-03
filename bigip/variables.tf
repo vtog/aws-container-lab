@@ -7,3 +7,9 @@ variable "vpc_cidr" {}
 variable "vpc_subnet" {
   type = "list"
 }
+
+variable "bigip_admin" {}
+variable "bigip_count" {}
+variable "do_rpm_url" {}
+variable "as3_rpm_url" {}
+
