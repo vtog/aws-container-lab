@@ -8,6 +8,16 @@ data "aws_ami" "f5-v14_ami" {
   }
 }
 
+#data "aws_ami" "f5-v14_ami" {
+#  most_recent = true
+#  owners      = ["679593333241"]
+#
+#  filter {
+#    name   = "name"
+#    values = ["F5 Networks BIGIP-14.0* PAYG - Best 25M*"]
+#  }
+#}
+
 #data "aws_ami" "f5-v13_ami" {
 #  most_recent = true
 #  owners      = ["679593333241"]
@@ -147,6 +157,7 @@ resource "aws_network_interface" "internal" {
 
 resource "aws_eip" "mgmt" {
   vpc               = true
+  depends_on        = ["aws_network_interface.mgmt"]
   network_interface = "${aws_network_interface.mgmt.id}"
 
   tags = {
@@ -156,6 +167,7 @@ resource "aws_eip" "mgmt" {
 
 resource "aws_eip" "external" {
   vpc               = true
+  depends_on        = ["aws_network_interface.external"]
   network_interface = "${aws_network_interface.external.id}"
 
   tags = {
@@ -210,6 +222,11 @@ resource "aws_instance" "bigip1" {
 
 data "template_file" "do_data" {
   template = "${file("${path.module}/do_data.tpl")}"
+
+  vars {
+    external_ip = "${aws_network_interface.external.private_ip}/24"
+    internal_ip = "${aws_network_interface.internal.private_ip}/24"
+  }
 }
 
 resource "null_resource" "onboard" {
