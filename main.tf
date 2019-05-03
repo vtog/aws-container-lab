@@ -65,7 +65,7 @@ resource "aws_subnet" "external1_subnet" {
   vpc_id                  = "${aws_vpc.lab_vpc.id}"
   cidr_block              = "${var.cidrs["external1"]}"
   map_public_ip_on_launch = true
-  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[0]}"
 
   tags {
     Name = "lab_external1"
@@ -76,7 +76,7 @@ resource "aws_subnet" "external2_subnet" {
   vpc_id                  = "${aws_vpc.lab_vpc.id}"
   cidr_block              = "${var.cidrs["external2"]}"
   map_public_ip_on_launch = true
-  availability_zone       = "${data.aws_availability_zones.available.names[2]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
 
   tags {
     Name = "lab_external2"
@@ -87,7 +87,7 @@ resource "aws_subnet" "internal1_subnet" {
   vpc_id                  = "${aws_vpc.lab_vpc.id}"
   cidr_block              = "${var.cidrs["internal1"]}"
   map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[0]}"
 
   tags {
     Name = "lab_internal1"
@@ -98,7 +98,7 @@ resource "aws_subnet" "internal2_subnet" {
   vpc_id                  = "${aws_vpc.lab_vpc.id}"
   cidr_block              = "${var.cidrs["internal2"]}"
   map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[2]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
 
   tags {
     Name = "lab_internal2"
@@ -136,7 +136,7 @@ resource "aws_key_pair" "lab_auth" {
   public_key = "${file(var.public_key_path)}"
 }
 
-#----- Deploy Big-IP -----
+##----- Deploy Big-IP -----
 module "bigip" {
   source        = "./bigip"
   myIP          = "${chomp(data.http.myIP.body)}/32"
@@ -144,7 +144,7 @@ module "bigip" {
   instance_type = "${var.bigip_instance_type}"
   vpc_id        = "${aws_vpc.lab_vpc.id}"
   vpc_cidr      = "${var.vpc_cidr}"
-  vpc_subnet    = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}"]
+  vpc_subnet    = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.internal1_subnet.id}"]
 }
 
 #----- Deploy Kubernetes -----
@@ -158,7 +158,8 @@ module "kube" {
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 }
 
-#----- Deploy OpenShift -----
+
+##----- Deploy OpenShift -----
 module "okd" {
   source        = "./openshift"
   myIP          = "${chomp(data.http.myIP.body)}/32"
@@ -168,3 +169,4 @@ module "okd" {
   vpc_cidr      = "${var.vpc_cidr}"
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 }
+
