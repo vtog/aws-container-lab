@@ -152,25 +152,25 @@ module "bigip" {
 }
 
 #----- Deploy Kubernetes -----
-#module "kube" {
-#  source        = "./kubernetes"
-#  myIP          = "${chomp(data.http.myIP.body)}/32"
-#  key_name      = "${var.key_name}"
-#  instance_type = "${var.kube_instance_type}"
-#  vpc_id        = "${aws_vpc.lab_vpc.id}"
-#  vpc_cidr      = "${var.vpc_cidr}"
-#  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
-#}
+module "kube" {
+  source        = "./kubernetes"
+  myIP          = "${chomp(data.http.myIP.body)}/32"
+  key_name      = "${var.key_name}"
+  instance_type = "${var.kube_instance_type}"
+  vpc_id        = "${aws_vpc.lab_vpc.id}"
+  vpc_cidr      = "${var.vpc_cidr}"
+  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
+}
 
 
 ##----- Deploy OpenShift -----
-#module "okd" {
-#  source        = "./openshift"
-#  myIP          = "${chomp(data.http.myIP.body)}/32"
-#  key_name      = "${var.key_name}"
-#  instance_type = "${var.okd_instance_type}"
-#  vpc_id        = "${aws_vpc.lab_vpc.id}"
-#  vpc_cidr      = "${var.vpc_cidr}"
-#  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
-#}
+module "okd" {
+  source        = "./openshift"
+  myIP          = "${chomp(data.http.myIP.body)}/32"
+  key_name      = "${var.key_name}"
+  instance_type = "${var.okd_instance_type}"
+  vpc_id        = "${aws_vpc.lab_vpc.id}"
+  vpc_cidr      = "${var.vpc_cidr}"
+  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
+}
 

@@ -245,3 +245,15 @@ resource "null_resource" "onboard" {
   }
 }
 
+output "bigip1__mgmt_dns" {
+  value = "${aws_eip.mgmt.public_dns}"
+}
+
+output "bigip1__passwd" {
+    value = "${random_string.password.result}"
+}
+
+output "bigip1__external_dns" {
+    value = "${aws_eip.external.public_dns}"
+}
+

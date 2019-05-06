@@ -24,17 +24,14 @@ Several assumptions are made:
   #. Kubernetes
   #. OpenShift
 
-The following steps build the AWS EC2 instances and the kubernetes cluster.
+The following steps build the AWS EC2 instances, the kubernetes cluster, and
+preps the OpenShift nodes.
 
 .. code-block:: bash
 
    git clone https://github.com/vtog/aws-container-lab.git
    cd aws-container-lab
    terraform apply
-   cd kubernetes/ansible
-   ansible-playbook playbooks/deploy-kube.yaml
-   cd ../../openshift/ansible
-   ansible-playbook playbooks/deploy-okd.yaml
 
 Additional steps are required for OpenShift. Once the playbooks from the
 previous steps are finished connect to **okd-master1** and run the following
@@ -47,6 +44,12 @@ commands:
 
    sudo htpasswd -b /etc/origin/master/htpasswd centos centos
    oc adm policy add-cluster-role-to-user cluster-admin centos
+
+After completion you can lookup the bigip1 mgmt url and passwd.
+
+.. code-block:: bash
+
+   terraform output
 
 To completly remove the AWS instances and supporting objects, change directory
 to the root of this cloned repo and run the following command:
