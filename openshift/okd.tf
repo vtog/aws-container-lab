@@ -1,15 +1,15 @@
 data "aws_ami" "centos_ami" {
   most_recent = true
-  owners      = ["679593333241"]
+  owners      = ["aws-marketplace"]
+
+  filter {
+    name   = "product-code"
+    values = ["aw0evgkw8e5c1q413zgy5pjce"]
+  }
 
   filter {
     name   = "name"
     values = ["CentOS Linux 7*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
   }
 }
 
@@ -169,6 +169,7 @@ resource "local_file" "save_inventory-okd" {
 #----- Run Ansible Playbook -----
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
-    command = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id} --profile default && cd ./openshift/ansible && ansible-playbook ./playbooks/deploy-okd.yaml"
+    working_dir = "./openshift/ansible/"
+    command     = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id} --profile default && ansible-playbook ./playbooks/deploy-okd.yaml"
   }
 }

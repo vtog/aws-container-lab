@@ -1,6 +1,6 @@
 data "aws_ami" "ubuntu_ami" {
   most_recent = true
-  owners      = ["099720109477"]
+  owners      = ["aws-marketplace"]
 
   filter {
     name   = "name"
@@ -109,6 +109,7 @@ resource "local_file" "save_inventory" {
 #----- Run Ansible Playbook -----
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
-    command = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile default && cd ./kubernetes/ansible && ansible-playbook ./playbooks/deploy-kube.yaml"
+    working_dir = "./kubernetes/ansible/"
+    command     = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile default && ansible-playbook ./playbooks/deploy-kube.yaml"
   }
 }

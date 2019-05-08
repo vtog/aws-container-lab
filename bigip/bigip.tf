@@ -1,6 +1,11 @@
 data "aws_ami" "f5-v14_ami" {
   most_recent = true
-  owners      = ["679593333241"]
+  owners      = ["aws-marketplace"]
+
+  filter {
+    name   = "product-code"
+    values = ["3ouya04g99e5euh4vbxtao1jz"]
+  }
 
   filter {
     name   = "name"
@@ -10,7 +15,12 @@ data "aws_ami" "f5-v14_ami" {
 
 #data "aws_ami" "f5-v14_ami" {
 #  most_recent = true
-#  owners      = ["679593333241"]
+#  owners      = ["aws-marketplace"]
+#
+#  filter {
+#    name   = "product-code"
+#    values = ["3ouya04g99e5euh4vbxtao1jz"]
+#  }
 #
 #  filter {
 #    name   = "name"
@@ -20,7 +30,12 @@ data "aws_ami" "f5-v14_ami" {
 
 #data "aws_ami" "f5-v13_ami" {
 #  most_recent = true
-#  owners      = ["679593333241"]
+#  owners      = ["aws-marketplace"]
+#
+#  filter {
+#    name   = "product-code"
+#    values = ["3ouya04g99e5euh4vbxtao1jz"]
+#  }
 #
 #  filter {
 #    name   = "name"
@@ -30,7 +45,12 @@ data "aws_ami" "f5-v14_ami" {
 
 #data "aws_ami" "f5-v12_ami" {
 #  most_recent = true
-#  owners      = ["679593333241"]
+#  owners      = ["aws-marketplace"]
+#
+#  filter {
+#    name   = "product-code"
+#    values = ["3ouya04g99e5euh4vbxtao1jz"]
+#  }
 #
 #  filter {
 #    name   = "name"
@@ -157,7 +177,7 @@ resource "aws_network_interface" "internal" {
 
 resource "aws_eip" "mgmt" {
   vpc               = true
-  depends_on        = ["aws_network_interface.mgmt"]
+  depends_on        = ["aws_network_interface.mgmt", "aws_instance.bigip1"]
   network_interface = "${aws_network_interface.mgmt.id}"
 
   tags = {
@@ -167,7 +187,7 @@ resource "aws_eip" "mgmt" {
 
 resource "aws_eip" "external" {
   vpc               = true
-  depends_on        = ["aws_network_interface.external"]
+  depends_on        = ["aws_network_interface.external", "aws_instance.bigip1"]
   network_interface = "${aws_network_interface.external.id}"
 
   tags = {
@@ -250,10 +270,9 @@ output "bigip1__mgmt_dns" {
 }
 
 output "bigip1__passwd" {
-    value = "${random_string.password.result}"
+  value = "${random_string.password.result}"
 }
 
 output "bigip1__external_dns" {
-    value = "${aws_eip.external.public_dns}"
+  value = "${aws_eip.external.public_dns}"
 }
-

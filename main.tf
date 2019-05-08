@@ -136,7 +136,7 @@ resource "aws_key_pair" "lab_auth" {
   public_key = "${file(var.public_key_path)}"
 }
 
-##----- Deploy Big-IP -----
+#----- Deploy Big-IP -----
 module "bigip" {
   source        = "./bigip"
   myIP          = "${chomp(data.http.myIP.body)}/32"
@@ -162,8 +162,7 @@ module "kube" {
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 }
 
-
-##----- Deploy OpenShift -----
+#----- Deploy OpenShift -----
 module "okd" {
   source        = "./openshift"
   myIP          = "${chomp(data.http.myIP.body)}/32"
@@ -173,4 +172,3 @@ module "okd" {
   vpc_cidr      = "${var.vpc_cidr}"
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 }
-
