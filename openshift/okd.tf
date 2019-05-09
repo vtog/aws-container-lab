@@ -170,6 +170,6 @@ resource "local_file" "save_inventory-okd" {
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
     working_dir = "./openshift/ansible/"
-    command     = "aws ec2 wait instance-status-ok --region ${var.aws_region} --profil ${var.aws_profile} --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id} --profile vtog && ansible-playbook ./playbooks/deploy-okd.yaml"
+    command     = "aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id} --profile vtog && ansible-playbook ./playbooks/deploy-okd.yaml"
   }
 }

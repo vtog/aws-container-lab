@@ -252,7 +252,7 @@ data "template_file" "do_data" {
 resource "null_resource" "onboard" {
   provisioner "local-exec" {
     command = <<EOF
-    aws ec2 wait instance-status-ok --region ${var.aws_region} --profil ${var.aws_profile} --instance-ids ${aws_instance.bigip1.id}
+    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.bigip1.id}
     until $(curl -kvu ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${aws_eip.mgmt.public_ip}/mgmt/shared/declarative-onboarding/example);do sleep 10;done
     curl -k -X POST https://${aws_instance.bigip1.public_ip}/mgmt/shared/declarative-onboarding \
             --retry 60 \
