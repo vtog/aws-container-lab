@@ -110,6 +110,6 @@ resource "local_file" "save_inventory" {
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
     working_dir = "./kubernetes/ansible/"
-    command     = "aws ec2 wait instance-status-ok --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile default && ansible-playbook ./playbooks/deploy-kube.yaml"
+    command     = "aws ec2 wait instance-status-ok --region ${var.aws_region} --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile vtog && ansible-playbook ./playbooks/deploy-kube.yaml"
   }
 }

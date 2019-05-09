@@ -154,6 +154,7 @@ module "bigip" {
 #----- Deploy Kubernetes -----
 module "kube" {
   source        = "./kubernetes"
+  aws_region    = "${var.aws_region}"
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.kube_instance_type}"
@@ -165,6 +166,7 @@ module "kube" {
 #----- Deploy OpenShift -----
 module "okd" {
   source        = "./openshift"
+  aws_region    = "${var.aws_region}"
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.okd_instance_type}"
