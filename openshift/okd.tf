@@ -26,6 +26,7 @@ resource "aws_instance" "okd-master1" {
 
   tags = {
     Name = "okd-master1"
+    Lab  = "Containers"
   }
 }
 
@@ -42,6 +43,7 @@ resource "aws_instance" "okd-node1" {
 
   tags = {
     Name = "okd-node1"
+    Lab  = "Containers"
   }
 }
 
@@ -58,6 +60,7 @@ resource "aws_instance" "okd-node2" {
 
   tags = {
     Name = "okd-node2"
+    Lab  = "Containers"
   }
 }
 
@@ -88,6 +91,7 @@ resource "aws_security_group" "okd_sg" {
 
   tags = {
     Name = "okd_sg"
+    Lab  = "Containers"
   }
 }
 

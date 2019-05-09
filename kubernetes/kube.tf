@@ -22,6 +22,7 @@ resource "aws_instance" "kube-master1" {
 
   tags = {
     Name = "kube-master1"
+    Lab  = "Containers"
   }
 }
 
@@ -34,6 +35,7 @@ resource "aws_instance" "kube-node1" {
 
   tags = {
     Name = "kube-node1"
+    Lab  = "Containers"
   }
 }
 
@@ -46,6 +48,7 @@ resource "aws_instance" "kube-node2" {
 
   tags = {
     Name = "kube-node2"
+    Lab  = "Containers"
   }
 }
 
@@ -76,6 +79,7 @@ resource "aws_security_group" "kube_sg" {
 
   tags = {
     Name = "kube_sg"
+    Lab  = "Containers"
   }
 }
 

@@ -12,6 +12,7 @@ resource "aws_vpc" "lab_vpc" {
 
   tags {
     Name = "lab_vpc"
+    Lab  = "Containers"
   }
 }
 
@@ -22,6 +23,7 @@ resource "aws_internet_gateway" "lab_internet_gateway" {
 
   tags {
     Name = "lab_igw"
+    Lab  = "Containers"
   }
 }
 
@@ -37,6 +39,7 @@ resource "aws_route_table" "lab_public_rt" {
 
   tags {
     Name = "lab_public"
+    Lab  = "Containers"
   }
 }
 
@@ -45,6 +48,7 @@ resource "aws_default_route_table" "lab_private_rt" {
 
   tags {
     Name = "lab_private"
+    Lab  = "Containers"
   }
 }
 
@@ -58,6 +62,7 @@ resource "aws_subnet" "mgmt_subnet" {
 
   tags {
     Name = "lab_mgmt"
+    Lab  = "Containers"
   }
 }
 
@@ -69,6 +74,7 @@ resource "aws_subnet" "external1_subnet" {
 
   tags {
     Name = "lab_external1"
+    Lab  = "Containers"
   }
 }
 
@@ -80,6 +86,7 @@ resource "aws_subnet" "external2_subnet" {
 
   tags {
     Name = "lab_external2"
+    Lab  = "Containers"
   }
 }
 
@@ -91,6 +98,7 @@ resource "aws_subnet" "internal1_subnet" {
 
   tags {
     Name = "lab_internal1"
+    Lab  = "Containers"
   }
 }
 
@@ -102,6 +110,7 @@ resource "aws_subnet" "internal2_subnet" {
 
   tags {
     Name = "lab_internal2"
+    Lab  = "Containers"
   }
 }
 
