@@ -139,6 +139,8 @@ resource "aws_key_pair" "lab_auth" {
 #----- Deploy Big-IP -----
 module "bigip" {
   source        = "./bigip"
+  aws_region    = "${var.aws_region}"
+  aws_profile   = "${var.aws_profile}"
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.bigip_instance_type}"
@@ -155,6 +157,7 @@ module "bigip" {
 module "kube" {
   source        = "./kubernetes"
   aws_region    = "${var.aws_region}"
+  aws_profile   = "${var.aws_profile}"
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.kube_instance_type}"
@@ -167,6 +170,7 @@ module "kube" {
 module "okd" {
   source        = "./openshift"
   aws_region    = "${var.aws_region}"
+  aws_profile   = "${var.aws_profile}"
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.okd_instance_type}"
