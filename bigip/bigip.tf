@@ -260,6 +260,7 @@ data "template_file" "do_data" {
 
 resource "null_resource" "onboard" {
   depends_on = ["aws_eip.mgmt", "aws_network_interface.mgmt", "aws_instance.bigip1"]
+
   provisioner "local-exec" {
     command = <<-EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.bigip1.id}
