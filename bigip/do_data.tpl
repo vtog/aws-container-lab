@@ -27,7 +27,7 @@
                     "class": "Provision",
                     "ltm": "nominal"
                 },
-                "ext-vlan": {
+                "external": {
                     "class": "VLAN",
                     "interfaces": [
                         {
@@ -35,14 +35,14 @@
                         }
                     ]
                 },
-                "ext-self": {
+                "external-self": {
                     "class": "SelfIp",
                     "address": "${external_ip}",
-                    "vlan": "ext-vlan",
+                    "vlan": "external",
                     "allowService": "none",
                     "trafficGroup": "traffic-group-local-only"
                 },
-                "int-vlan": {
+                "internal": {
                     "class": "VLAN",
                     "interfaces": [
                         {
@@ -50,10 +50,10 @@
                         }
                     ]
                 },
-                "int-self": {
+                "internal-self": {
                     "class": "SelfIp",
                     "address": "${internal_ip}",
-                    "vlan": "int-vlan",
+                    "vlan": "internal",
                     "allowService": "none",
                     "trafficGroup": "traffic-group-local-only"
                 }
