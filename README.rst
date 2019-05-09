@@ -13,13 +13,15 @@ Several assumptions are made:
 - An active AWS Account, with proper IAM configuration.
 - Linux CLI (For my testing I used Debian)
 
-  #. ~/.aws/credentials (properly configured)
+  #. ~/.aws/credentials & config (properly configured)
   #. ~/.ssh/id_rsa & id_rsa.pub
-  #. git, terraform, and ansible installed
+  #. git, awscli, terraform, and ansible installed
 
 - Familiarity with
 
   #. Terraform
+  #. Ansible
+  #. AWS CLI
   #. Big-IP
   #. Kubernetes
   #. OpenShift

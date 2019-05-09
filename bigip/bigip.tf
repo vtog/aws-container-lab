@@ -250,14 +250,15 @@ data "template_file" "do_data" {
 }
 
 resource "null_resource" "onboard" {
+  depends_on = ["aws_eip.mgmt", "aws_network_interface.mgmt", "aws_instance.bigip1"]
   provisioner "local-exec" {
-    command = <<EOF
+    command = <<-EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.bigip1.id}
-    until $(curl -kvu ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${aws_eip.mgmt.public_ip}/mgmt/shared/declarative-onboarding/example);do sleep 10;done
-    curl -k -X POST https://${aws_instance.bigip1.public_ip}/mgmt/shared/declarative-onboarding \
-            --retry 60 \
+    until $(curl -ku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${aws_eip.mgmt.public_ip}/mgmt/shared/declarative-onboarding/example);do sleep 10;done
+    curl -k -X POST https://${aws_eip.mgmt.public_ip}/mgmt/shared/declarative-onboarding \
+            --retry 10 \
             --retry-connrefused \
-            --retry-delay 120 \
+            --retry-delay 30 \
             -H "Content-Type: application/json" \
             -u ${var.bigip_admin}:${random_string.password.result} \
             -d '${data.template_file.do_data.rendered} '
