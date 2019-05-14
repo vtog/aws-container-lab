@@ -1,12 +1,12 @@
 #--------root/outputs.tf--------
-output "BIGIP Public DNS" {
+output "DNS Info" {
   value = "${module.bigip.public_dns}"
 }
 
-output "BIGIP Public IP" {
+output "IP Info" {
   value = "${module.bigip.public_ip}"
 }
 
-output "BIGIP Password" {
+output "Password" {
   value = "${module.bigip.password}"
 }

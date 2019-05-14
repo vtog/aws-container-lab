@@ -4,7 +4,7 @@
     "async": true,
         "Common": {
             "class": "Tenant",
-                "hostname": "bigip1.f5demos.com",
+                "hostname": "${host_name}",
                 "myDns": {
                     "class": "DNS",
                     "nameServers": [
