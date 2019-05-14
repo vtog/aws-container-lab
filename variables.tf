@@ -14,9 +14,13 @@ data "http" "myIP" {
 variable "key_name" {}
 variable "public_key_path" {}
 variable "kube_instance_type" {}
+variable "kube_count" {}
 variable "okd_instance_type" {}
+variable "okd_count" {}
 variable "bigip_instance_type" {}
-variable "bigip_admin" {}
 variable "bigip_count" {}
+variable "bigip_ami_prod_code" {}
+variable "bigip_ami_name_filt" {}
+variable "bigip_admin" {}
 variable "do_rpm_url" {}
 variable "as3_rpm_url" {}

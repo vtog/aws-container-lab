@@ -4,12 +4,12 @@ data "aws_ami" "f5_ami" {
 
   filter {
     name   = "product-code"
-    values = ["${var.bigip_ami_prod_code}"]
+    values = ["$var.bigip_ami_prod_code"]
   }
 
   filter {
     name   = "name"
-    values = ["${var.bigip_ami_name_filt}"]
+    values = ["$var.bigip_ami_name_filt"]
   }
 }
 
@@ -199,7 +199,7 @@ resource "aws_instance" "bigip1" {
   user_data = "${data.template_file.cloudinit_data.rendered}"
 
   tags = {
-    Name = "bigip${count.index + 1}"
+    Name = "bigip1"
     Lab  = "Containers"
   }
 }

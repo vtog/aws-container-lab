@@ -3,6 +3,7 @@ variable "aws_region" {}
 variable "aws_profile" {}
 variable "key_name" {}
 variable "instance_type" {}
+variable "okd_count" {}
 variable "vpc_id" {}
 variable "vpc_cidr" {}
 

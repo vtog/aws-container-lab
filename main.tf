@@ -154,6 +154,8 @@ module "bigip" {
   key_name      = "${var.key_name}"
   instance_type = "${var.bigip_instance_type}"
   bigip_count   = "${var.bigip_count}"
+  bigip_ami_prod_code = "${var.bigip_ami_prod_code}"
+  bigip_ami_name_filt = "${var.bigip_ami_name_filt}"
   bigip_admin   = "${var.bigip_admin}"
   do_rpm_url    = "${var.do_rpm_url}"
   as3_rpm_url   = "${var.as3_rpm_url}"
@@ -170,6 +172,7 @@ module "kube" {
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.kube_instance_type}"
+  kube_count    = "${var.bigip_count}"
   vpc_id        = "${aws_vpc.lab_vpc.id}"
   vpc_cidr      = "${var.vpc_cidr}"
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
@@ -183,6 +186,7 @@ module "okd" {
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = "${var.key_name}"
   instance_type = "${var.okd_instance_type}"
+  okd_count     = "${var.bigip_count}"
   vpc_id        = "${aws_vpc.lab_vpc.id}"
   vpc_cidr      = "${var.vpc_cidr}"
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]

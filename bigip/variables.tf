@@ -12,5 +12,7 @@ variable "vpc_subnet" {
 
 variable "bigip_admin" {}
 variable "bigip_count" {}
+variable "bigip_ami_prod_code" {}
+variable "bigip_ami_name_filt" {}
 variable "do_rpm_url" {}
 variable "as3_rpm_url" {}
