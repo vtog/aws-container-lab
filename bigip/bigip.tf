@@ -186,14 +186,17 @@ resource "aws_instance" "bigip" {
     network_interface_id = "${element(aws_network_interface.mgmt.*.id, count.index)}"
     device_index         = 0
   }
+
   network_interface {
     network_interface_id = "${element(aws_network_interface.external.*.id, count.index)}"
     device_index         = 1
   }
+
   network_interface {
     network_interface_id = "${element(aws_network_interface.internal.*.id, count.index)}"
     device_index         = 2
   }
+
   tags = {
     Name = "bigip${count.index + 1}"
     Lab  = "Containers"
@@ -230,20 +233,16 @@ data "template_file" "do_data" {
 }
 
 resource "null_resource" "onboard" {
-  depends_on = ["aws_eip.mgmt", "aws_network_interface.mgmt", "aws_instance.bigip"]
+  depends_on = ["null_resource.tmsh"]
   count      = "${var.bigip_count}"
 
   provisioner "local-exec" {
-    command = <<-EOF
-    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
+    command = <<EOF
     until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding/info);do sleep 10;done
     curl -k -X POST https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding \
-            --retry 10 \
-            --retry-connrefused \
-            --retry-delay 30 \
             -H "Content-Type: application/json" \
             -u ${var.bigip_admin}:${random_string.password.result} \
-            -d '${data.template_file.do_data.*.rendered[count.index]} '
+            -d '${data.template_file.do_data.*.rendered[count.index]}'
     EOF
   }
 }
