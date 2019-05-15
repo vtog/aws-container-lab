@@ -248,30 +248,12 @@ resource "null_resource" "onboard" {
 
 #-------- bigip output --------
 
-resource "null_resource" "host-ip" {
-  depends_on = ["aws_instance.bigip"]
-  count      = "${var.bigip_count}"
-
-  triggers {
-    value = "${element(aws_instance.bigip.*.tags.Name, count.index)}=${element(aws_instance.bigip.*.public_ip, count.index)}"
-  }
-}
-
-resource "null_resource" "host-dns" {
-  depends_on = ["aws_instance.bigip"]
-  count      = "${var.bigip_count}"
-
-  triggers {
-    value = "${element(aws_instance.bigip.*.tags.Name, count.index)}=${element(aws_instance.bigip.*.public_dns, count.index)}"
-  }
-}
-
 output "public_dns" {
-  value = "${join(" ; ", null_resource.host-dns.*.triggers.value)}"
+  value = "${join(" ; ", aws_instance.bigip.*.public_dns)}"
 }
 
 output "public_ip" {
-  value = "${join(" ; ", null_resource.host-ip.*.triggers.value)}"
+  value = "${join(" ; ", aws_instance.bigip.*.public_ip)}"
 }
 
 output "password" {
