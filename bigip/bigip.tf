@@ -115,7 +115,7 @@ resource "aws_security_group" "bigip_internal_sg" {
 
 resource "aws_network_interface" "mgmt" {
   count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[count.index]}"
+  subnet_id       = "${var.vpc_subnet[0]}"
   security_groups = ["${aws_security_group.bigip_mgmt_sg.id}"]
 
   tags = {
@@ -126,7 +126,7 @@ resource "aws_network_interface" "mgmt" {
 
 resource "aws_network_interface" "external" {
   count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[count.index + 2]}"
+  subnet_id       = "${var.vpc_subnet[2]}"
   security_groups = ["${aws_security_group.bigip_external_sg.id}"]
 
   tags = {
@@ -137,7 +137,7 @@ resource "aws_network_interface" "external" {
 
 resource "aws_network_interface" "internal" {
   count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[count.index + 4]}"
+  subnet_id       = "${var.vpc_subnet[4]}"
   security_groups = ["${aws_security_group.bigip_internal_sg.id}"]
 
   tags = {
