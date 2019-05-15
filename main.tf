@@ -157,8 +157,8 @@ module "bigip" {
   bigip_ami_prod_code = "${var.bigip_ami_prod_code}"
   bigip_ami_name_filt = "${var.bigip_ami_name_filt}"
   bigip_admin         = "${var.bigip_admin}"
-  do_rpm_url          = "${var.do_rpm_url}"
-  as3_rpm_url         = "${var.as3_rpm_url}"
+  do_rpm              = "${var.do_rpm}"
+  as3_rpm             = "${var.as3_rpm}"
   vpc_id              = "${aws_vpc.lab_vpc.id}"
   vpc_cidr            = "${var.vpc_cidr}"
   vpc_subnet          = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.internal1_subnet.id}"]

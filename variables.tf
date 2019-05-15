@@ -22,5 +22,5 @@ variable "bigip_count" {}
 variable "bigip_ami_prod_code" {}
 variable "bigip_ami_name_filt" {}
 variable "bigip_admin" {}
-variable "do_rpm_url" {}
-variable "as3_rpm_url" {}
+variable "do_rpm" {}
+variable "as3_rpm" {}

@@ -176,43 +176,45 @@ resource "random_string" "password" {
   override_special = "@"
 }
 
-data "template_file" "cloudinit_data" {
-  template = "${file("${path.module}/cloudinit_data.tpl")}"
-
-  vars {
-    admin_username = "${var.bigip_admin}"
-    admin_password = "${random_string.password.result}"
-    do_rpm_url     = "${var.do_rpm_url}"
-    as3_rpm_url    = "${var.as3_rpm_url}"
-  }
-}
-
 resource "aws_instance" "bigip" {
   ami           = "${data.aws_ami.f5_ami.id}"
   instance_type = "${var.instance_type}"
   count         = "${var.bigip_count}"
   key_name      = "${var.key_name}"
 
-  user_data = "${data.template_file.cloudinit_data.rendered}"
-
   network_interface {
     network_interface_id = "${element(aws_network_interface.mgmt.*.id, count.index)}"
     device_index         = 0
   }
-
   network_interface {
     network_interface_id = "${element(aws_network_interface.external.*.id, count.index)}"
     device_index         = 1
   }
-
   network_interface {
     network_interface_id = "${element(aws_network_interface.internal.*.id, count.index)}"
     device_index         = 2
   }
-
   tags = {
     Name = "bigip${count.index + 1}"
     Lab  = "Containers"
+  }
+}
+
+#----- Setup DO & AS3 -----
+resource "null_resource" "tmsh" {
+  depends_on = ["aws_eip.mgmt", "aws_network_interface.mgmt", "aws_instance.bigip"]
+  count      = "${var.bigip_count}"
+
+  provisioner "local-exec" {
+    command = <<EOF
+    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
+    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'modify auth user ${var.bigip_admin} password ${random_string.password.result}'
+    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'modify auth user admin shell bash'
+    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.do_rpm} -L https://github.com/F5Networks/f5-declarative-onboarding/raw/master/dist/${var.do_rpm}'
+    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.as3_rpm} -L https://github.com/F5Networks/f5-appsvcs-extension/raw/master/dist/latest/${var.as3_rpm}'
+    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"'
+    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.as3_rpm}\"}"'
+    EOF
   }
 }
 
@@ -234,7 +236,7 @@ resource "null_resource" "onboard" {
   provisioner "local-exec" {
     command = <<-EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-    until $(curl -ku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding/example);do sleep 10;done
+    until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding/info);do sleep 10;done
     curl -k -X POST https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding \
             --retry 10 \
             --retry-connrefused \
