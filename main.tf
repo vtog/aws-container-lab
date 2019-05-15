@@ -54,11 +54,23 @@ resource "aws_default_route_table" "lab_private_rt" {
 
 # Subnets
 
-resource "aws_subnet" "mgmt_subnet" {
+resource "aws_subnet" "mgmt1_subnet" {
   vpc_id                  = "${aws_vpc.lab_vpc.id}"
-  cidr_block              = "${var.cidrs["mgmt"]}"
+  cidr_block              = "${var.cidrs["mgmt1"]}"
   map_public_ip_on_launch = true
   availability_zone       = "${data.aws_availability_zones.available.names[0]}"
+
+  tags {
+    Name = "lab_mgmt"
+    Lab  = "Containers"
+  }
+}
+
+resource "aws_subnet" "mgmt2_subnet" {
+  vpc_id                  = "${aws_vpc.lab_vpc.id}"
+  cidr_block              = "${var.cidrs["mgmt2"]}"
+  map_public_ip_on_launch = true
+  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
 
   tags {
     Name = "lab_mgmt"
@@ -114,8 +126,13 @@ resource "aws_subnet" "internal2_subnet" {
   }
 }
 
-resource "aws_route_table_association" "lab_mgmt_assoc" {
-  subnet_id      = "${aws_subnet.mgmt_subnet.id}"
+resource "aws_route_table_association" "lab_mgmt1_assoc" {
+  subnet_id      = "${aws_subnet.mgmt1_subnet.id}"
+  route_table_id = "${aws_route_table.lab_public_rt.id}"
+}
+
+resource "aws_route_table_association" "lab_mgmt2_assoc" {
+  subnet_id      = "${aws_subnet.mgmt2_subnet.id}"
   route_table_id = "${aws_route_table.lab_public_rt.id}"
 }
 
@@ -161,7 +178,7 @@ module "bigip" {
   as3_rpm             = "${var.as3_rpm}"
   vpc_id              = "${aws_vpc.lab_vpc.id}"
   vpc_cidr            = "${var.vpc_cidr}"
-  vpc_subnet          = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.internal1_subnet.id}"]
+  vpc_subnet          = ["${aws_subnet.mgmt1_subnet.id}", "${aws_subnet.mgmt2_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}", "${aws_subnet.internal1_subnet.id}", "${aws_subnet.internal2_subnet.id}"]
 }
 
 #----- Deploy Kubernetes -----

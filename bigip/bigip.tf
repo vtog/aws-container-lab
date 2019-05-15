@@ -115,7 +115,7 @@ resource "aws_security_group" "bigip_internal_sg" {
 
 resource "aws_network_interface" "mgmt" {
   count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[0]}"
+  subnet_id       = "${var.vpc_subnet[count.index]}"
   security_groups = ["${aws_security_group.bigip_mgmt_sg.id}"]
 
   tags = {
@@ -126,7 +126,7 @@ resource "aws_network_interface" "mgmt" {
 
 resource "aws_network_interface" "external" {
   count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[1]}"
+  subnet_id       = "${var.vpc_subnet[count.index + 2]}"
   security_groups = ["${aws_security_group.bigip_external_sg.id}"]
 
   tags = {
@@ -137,7 +137,7 @@ resource "aws_network_interface" "external" {
 
 resource "aws_network_interface" "internal" {
   count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[2]}"
+  subnet_id       = "${var.vpc_subnet[count.index + 4]}"
   security_groups = ["${aws_security_group.bigip_internal_sg.id}"]
 
   tags = {
@@ -211,12 +211,17 @@ resource "null_resource" "tmsh" {
   provisioner "local-exec" {
     command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'modify auth user ${var.bigip_admin} password ${random_string.password.result}'
     ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'modify auth user admin shell bash'
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.do_rpm} -L https://github.com/F5Networks/f5-declarative-onboarding/raw/master/dist/${var.do_rpm}'
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.as3_rpm} -L https://github.com/F5Networks/f5-appsvcs-extension/raw/master/dist/latest/${var.as3_rpm}'
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"'
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.as3_rpm}\"}"'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh modify auth user ${var.bigip_admin} password ${random_string.password.result}'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh modify sys httpd auth-pam-idle-timeout 3600'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh modify sys db ui.system.preferences.recordsperscreen value 100'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh modify sys db ui.system.preferences.advancedselection value advanced'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh save sys config'
+    until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/iapp/package-management-tasks);do sleep 10;done
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.do_rpm} -L https://github.com/F5Networks/f5-declarative-onboarding/raw/master/dist/${var.do_rpm}'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.as3_rpm} -L https://github.com/F5Networks/f5-appsvcs-extension/raw/master/dist/latest/${var.as3_rpm}'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"'
+    ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.as3_rpm}\"}"'
     EOF
   }
 }
@@ -240,9 +245,12 @@ resource "null_resource" "onboard" {
     command = <<EOF
     until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding/info);do sleep 10;done
     curl -k -X POST https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding \
+            --retry 10 \
+            --retry-connrefused \
+            --retry-delay 30 \
             -H "Content-Type: application/json" \
             -u ${var.bigip_admin}:${random_string.password.result} \
-            -d '${data.template_file.do_data.*.rendered[count.index]}'
+            -d '${data.template_file.do_data.*.rendered[count.index]} '
     EOF
   }
 }
