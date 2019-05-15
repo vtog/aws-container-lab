@@ -147,21 +147,21 @@ resource "aws_key_pair" "lab_auth" {
 
 #----- Deploy Big-IP -----
 module "bigip" {
-  source        = "./bigip"
-  aws_region    = "${var.aws_region}"
-  aws_profile   = "${var.aws_profile}"
-  myIP          = "${chomp(data.http.myIP.body)}/32"
-  key_name      = "${var.key_name}"
-  instance_type = "${var.bigip_instance_type}"
-  bigip_count   = "${var.bigip_count}"
+  source              = "./bigip"
+  aws_region          = "${var.aws_region}"
+  aws_profile         = "${var.aws_profile}"
+  myIP                = "${chomp(data.http.myIP.body)}/32"
+  key_name            = "${var.key_name}"
+  instance_type       = "${var.bigip_instance_type}"
+  bigip_count         = "${var.bigip_count}"
   bigip_ami_prod_code = "${var.bigip_ami_prod_code}"
   bigip_ami_name_filt = "${var.bigip_ami_name_filt}"
-  bigip_admin   = "${var.bigip_admin}"
-  do_rpm_url    = "${var.do_rpm_url}"
-  as3_rpm_url   = "${var.as3_rpm_url}"
-  vpc_id        = "${aws_vpc.lab_vpc.id}"
-  vpc_cidr      = "${var.vpc_cidr}"
-  vpc_subnet    = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.internal1_subnet.id}"]
+  bigip_admin         = "${var.bigip_admin}"
+  do_rpm_url          = "${var.do_rpm_url}"
+  as3_rpm_url         = "${var.as3_rpm_url}"
+  vpc_id              = "${aws_vpc.lab_vpc.id}"
+  vpc_cidr            = "${var.vpc_cidr}"
+  vpc_subnet          = ["${aws_subnet.mgmt_subnet.id}", "${aws_subnet.external1_subnet.id}", "${aws_subnet.internal1_subnet.id}"]
 }
 
 #----- Deploy Kubernetes -----
@@ -178,6 +178,7 @@ module "bigip" {
 #  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 #}
 
+
 #----- Deploy OpenShift -----
 #module "okd" {
 #  source        = "./openshift"
@@ -191,3 +192,4 @@ module "bigip" {
 #  vpc_cidr      = "${var.vpc_cidr}"
 #  vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 #}
+
