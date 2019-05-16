@@ -4,7 +4,6 @@
     "async": true,
         "Common": {
             "class": "Tenant",
-                "hostname": "${host_name}",
                 "myDns": {
                     "class": "DNS",
                     "nameServers": [
@@ -17,7 +16,7 @@
                     ]
                 },
                 "myNtp": {
-                    "class": "NTP",
+                    "class": "America/Chicago",
                     "servers": [
                         "pool.ntp.org"
                     ],

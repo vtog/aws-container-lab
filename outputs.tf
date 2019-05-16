@@ -1,12 +1,12 @@
 #--------root/outputs.tf--------
-output "DNS Info" {
+output "Admin URL" {
   value = "${module.bigip.public_dns}"
 }
 
-output "IP Info" {
+output "Mgmt IP" {
   value = "${module.bigip.public_ip}"
 }
 
-output "Password" {
+output "Admin Password" {
   value = "${module.bigip.password}"
 }

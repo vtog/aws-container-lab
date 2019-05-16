@@ -61,7 +61,7 @@ resource "aws_subnet" "mgmt1_subnet" {
   availability_zone       = "${data.aws_availability_zones.available.names[0]}"
 
   tags {
-    Name = "lab_mgmt"
+    Name = "lab_mgmt1"
     Lab  = "Containers"
   }
 }
@@ -73,7 +73,7 @@ resource "aws_subnet" "mgmt2_subnet" {
   availability_zone       = "${data.aws_availability_zones.available.names[1]}"
 
   tags {
-    Name = "lab_mgmt"
+    Name = "lab_mgmt2"
     Lab  = "Containers"
   }
 }

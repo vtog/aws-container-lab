@@ -125,9 +125,10 @@ resource "aws_network_interface" "mgmt" {
 }
 
 resource "aws_network_interface" "external" {
-  count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[2]}"
-  security_groups = ["${aws_security_group.bigip_external_sg.id}"]
+  count             = "${var.bigip_count}"
+  subnet_id         = "${var.vpc_subnet[2]}"
+  security_groups   = ["${aws_security_group.bigip_external_sg.id}"]
+  private_ips_count = 1
 
   tags = {
     Name = "bigip${count.index + 1}_external"
@@ -136,9 +137,10 @@ resource "aws_network_interface" "external" {
 }
 
 resource "aws_network_interface" "internal" {
-  count           = "${var.bigip_count}"
-  subnet_id       = "${var.vpc_subnet[4]}"
-  security_groups = ["${aws_security_group.bigip_internal_sg.id}"]
+  count             = "${var.bigip_count}"
+  subnet_id         = "${var.vpc_subnet[4]}"
+  security_groups   = ["${aws_security_group.bigip_internal_sg.id}"]
+  private_ips_count = 1
 
   tags = {
     Name = "bigip${count.index + 1}_internal"
@@ -217,7 +219,7 @@ resource "null_resource" "tmsh" {
     ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh modify sys db ui.system.preferences.recordsperscreen value 100'
     ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh modify sys db ui.system.preferences.advancedselection value advanced'
     ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'tmsh save sys config'
-    until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/iapp/package-management-tasks);do sleep 10;done
+    until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/iapp/package-management-tasks);do sleep 30;done
     ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.do_rpm} -L https://github.com/F5Networks/f5-declarative-onboarding/raw/master/dist/${var.do_rpm}'
     ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -ko /var/config/rest/downloads/${var.as3_rpm} -L https://github.com/F5Networks/f5-appsvcs-extension/raw/master/dist/latest/${var.as3_rpm}'
     ssh ${var.bigip_admin}@${element(aws_eip.mgmt.*.public_ip, count.index)} 'curl -u ${var.bigip_admin}:${random_string.password.result} -X POST http://localhost:8100/mgmt/shared/iapp/package-management-tasks -d "{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"'
@@ -231,7 +233,12 @@ data "template_file" "do_data" {
   template = "${file("${path.module}/do_data.tpl")}"
 
   vars {
-    host_name   = "bigip${count.index + 1}.f5demos.com"
+    #host_name   = "bigip${count.index + 1}.f5demos.com"
+    #host_name   = "${element(aws_instance.bigip.*.private_dns, count.index)}"
+    members     = "${join(", ", aws_instance.bigip.*.private_dns)}"
+    admin       = "${var.bigip_admin}"
+    password    = "${random_string.password.result}" 
+    mgmt_ip     = "${element(aws_network_interface.mgmt.*.private_ip, count.index)}/24"
     external_ip = "${element(aws_network_interface.external.*.private_ip, count.index)}/24"
     internal_ip = "${element(aws_network_interface.internal.*.private_ip, count.index)}/24"
   }
@@ -243,7 +250,7 @@ resource "null_resource" "onboard" {
 
   provisioner "local-exec" {
     command = <<EOF
-    until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding/info);do sleep 10;done
+    until $(curl -sku ${var.bigip_admin}:${random_string.password.result} -o /dev/null --silent --fail https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding/info);do sleep 30;done
     curl -k -X POST https://${element(aws_eip.mgmt.*.public_ip, count.index)}/mgmt/shared/declarative-onboarding \
             --retry 10 \
             --retry-connrefused \
@@ -258,11 +265,11 @@ resource "null_resource" "onboard" {
 #-------- bigip output --------
 
 output "public_dns" {
-  value = "${join(" ; ", aws_instance.bigip.*.public_dns)}"
+  value = "${formatlist("%s = https://%s", aws_instance.bigip.*.tags.Name, aws_instance.bigip.*.public_dns)}"
 }
 
 output "public_ip" {
-  value = "${join(" ; ", aws_instance.bigip.*.public_ip)}"
+  value = "${formatlist("%s = %s ", aws_instance.bigip.*.tags.Name, aws_instance.bigip.*.public_ip)}"
 }
 
 output "password" {
