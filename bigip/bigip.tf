@@ -233,9 +233,8 @@ data "template_file" "do_data" {
   template = "${file("${path.module}/do_data.tpl")}"
 
   vars {
-    #host_name   = "bigip${count.index + 1}.f5demos.com"
-    #host_name   = "${element(aws_instance.bigip.*.private_dns, count.index)}"
-    members     = "${join(", ", aws_instance.bigip.*.private_dns)}"
+    host_name   = "bigip${count.index + 1}"
+    members     = "${join(", ", aws_instance.bigip.*.tags.Name)}"
     admin       = "${var.bigip_admin}"
     password    = "${random_string.password.result}" 
     mgmt_ip     = "${element(aws_network_interface.mgmt.*.private_ip, count.index)}/24"
