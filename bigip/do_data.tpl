@@ -4,6 +4,7 @@
     "async": true,
         "Common": {
             "class": "Tenant",
+                "hostname": "${host_name}",
                 "myDns": {
                     "class": "DNS",
                     "nameServers": [
@@ -16,11 +17,11 @@
                     ]
                 },
                 "myNtp": {
-                    "class": "America/Chicago",
+                    "class": "NTP",
                     "servers": [
                         "pool.ntp.org"
                     ],
-                    "timezone": "UTC"
+                    "timezone": "America/Chicago"
                 },
                 "myProvisioning": {
                     "class": "Provision",
