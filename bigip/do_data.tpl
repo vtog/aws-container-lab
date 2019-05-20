@@ -56,6 +56,14 @@
                     "vlan": "internal",
                     "allowService": "none",
                     "trafficGroup": "traffic-group-local-only"
+                },
+                "configsync": {
+                    "class": "ConfigSync",
+                    "configsyncIp": "/Common/internal-self/address"
+                },
+                "failoverAddress": {
+                    "class": "FailoverUnicast",
+                    "address": "/Common/internal-self/address"
                 }
         }
 }
