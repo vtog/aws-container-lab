@@ -225,8 +225,6 @@ resource "null_resource" "tmsh" {
   provisioner "local-exec" {
     command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-    until $(curl -ku $CREDS -o /dev/null --silent --fail https://$IP/mgmt/shared/iapp/package-management-tasks);do sleep 10;done
-
     wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm}
     wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm}
 
@@ -236,6 +234,8 @@ resource "null_resource" "tmsh" {
     as3_LEN=$(wc -c ${var.as3_rpm} | cut -f 1 -d ' ')
     do_DATA="{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"
     as3_DATA="{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.as3_rpm}\"}"
+
+    until $(curl -ku $CREDS -o /dev/null --silent --fail https://$IP/mgmt/shared/iapp/package-management-tasks);do sleep 10;done
 
     curl -ku $CREDS https://$IP/mgmt/shared/file-transfer/uploads/${var.do_rpm} -H 'Content-Type: application/octet-stream' -H "Content-Range: 0-$((do_LEN - 1))/$do_LEN" -H "Content-Length: $do_LEN" -H 'Connection: keep-alive' --data-binary @${var.do_rpm}
     curl -ku $CREDS https://$IP/mgmt/shared/file-transfer/uploads/${var.as3_rpm} -H 'Content-Type: application/octet-stream' -H "Content-Range: 0-$((as3_LEN - 1))/$as3_LEN" -H "Content-Length: $as3_LEN" -H 'Connection: keep-alive' --data-binary @${var.as3_rpm}
