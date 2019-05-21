@@ -190,7 +190,7 @@ data "template_file" "cloudinit_data" {
 resource "aws_instance" "bigip" {
   ami           = "${data.aws_ami.f5_ami.id}"
   instance_type = "${var.instance_type}"
-  depends_on    = ["aws_network_interface.mgmt", "aws_network_interface.external","aws_network_interface.internal" ]
+  depends_on    = ["aws_network_interface.mgmt", "aws_network_interface.external", "aws_network_interface.internal"]
   count         = "${var.bigip_count}"
   key_name      = "${var.key_name}"
 
@@ -255,11 +255,10 @@ data "template_file" "do_data" {
     host_name   = "${element(aws_instance.bigip.*.private_dns, count.index)}"
     members     = "${join(", ", formatlist("\"%s\"", aws_instance.bigip.*.private_dns))}"
     admin       = "${var.bigip_admin}"
-    password    = "${random_string.password.result}" 
+    password    = "${random_string.password.result}"
     mgmt_ip     = "${element(aws_network_interface.mgmt.*.private_ip, count.index)}"
     external_ip = "${element(aws_network_interface.external.*.private_ip, count.index)}"
     internal_ip = "${element(aws_network_interface.internal.*.private_ip, count.index)}"
-    test        = "${element(aws_network_interface.internal.*.private_ip, count.index)}"
   }
 }
 
@@ -294,8 +293,3 @@ output "public_ip" {
 output "password" {
   value = "${random_string.password.result}"
 }
-
-output "testing" {
-  value = "${jsonencode(aws_instance.bigip.0.private_ip)}"
-}
-
