@@ -37,7 +37,7 @@
                 },
                 "external-self": {
                     "class": "SelfIp",
-                    "address": "${external_ip}",
+                    "address": "${external_ip}/24",
                     "vlan": "external",
                     "allowService": "none",
                     "trafficGroup": "traffic-group-local-only"
@@ -52,7 +52,7 @@
                 },
                 "internal-self": {
                     "class": "SelfIp",
-                    "address": "${internal_ip}",
+                    "address": "${internal_ip}/24",
                     "vlan": "internal",
                     "allowService": "none",
                     "trafficGroup": "traffic-group-local-only"
@@ -64,6 +64,25 @@
                 "failoverAddress": {
                     "class": "FailoverUnicast",
                     "address": "/Common/internal-self/address"
+                },
+                "failoverGroup": {
+                    "class": "DeviceGroup",
+                    "type": "sync-failover",
+                    "members": [${members}],
+                    "owner": "/Common/failoverGroup/members/0",
+                    "autoSync": true,
+                    "saveOnAutoSync": false,
+                    "networkFailover": true,
+                    "fullLoadOnSync": false,
+                    "asmSync": false
+                },
+                "trust": {
+                    "class": "DeviceTrust",
+                    "localUsername": "${admin}",
+                    "localPassword": "${password}",
+                    "remoteHost": "${mgmt_ip}",
+                    "remoteUsername": "${admin}",
+                    "remotePassword": "${password}"
                 }
         }
 }

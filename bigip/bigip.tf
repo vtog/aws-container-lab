@@ -150,7 +150,7 @@ resource "aws_network_interface" "internal" {
 
 resource "aws_eip" "mgmt" {
   vpc               = true
-  depends_on        = ["aws_network_interface.mgmt"]
+  depends_on        = ["aws_network_interface.mgmt", "aws_instance.bigip"]
   count             = "${var.bigip_count}"
   network_interface = "${element(aws_network_interface.mgmt.*.id, count.index)}"
 
@@ -162,7 +162,7 @@ resource "aws_eip" "mgmt" {
 
 resource "aws_eip" "external" {
   vpc               = true
-  depends_on        = ["aws_network_interface.external"]
+  depends_on        = ["aws_network_interface.external", "aws_instance.bigip"]
   count             = "${var.bigip_count}"
   network_interface = "${element(aws_network_interface.external.*.id, count.index)}"
 
@@ -176,6 +176,15 @@ resource "random_string" "password" {
   length           = 16
   special          = true
   override_special = "@"
+}
+
+data "template_file" "cloudinit_data" {
+  template = "${file("${path.module}/cloudinit_data.tpl")}"
+
+  vars {
+    admin_username = "${var.bigip_admin}"
+    admin_password = "${random_string.password.result}"
+  }
 }
 
 resource "aws_instance" "bigip" {
@@ -200,6 +209,8 @@ resource "aws_instance" "bigip" {
     device_index         = 2
   }
 
+  user_data = "${data.template_file.cloudinit_data.rendered}"
+
   tags = {
     Name = "bigip${count.index + 1}"
     Lab  = "Containers"
@@ -208,33 +219,31 @@ resource "aws_instance" "bigip" {
 
 #----- Setup DO & AS3 -----
 resource "null_resource" "tmsh" {
-  depends_on = ["aws_eip.mgmt", "aws_network_interface.mgmt", "aws_instance.bigip"]
+  depends_on = ["aws_instance.bigip"]
   count      = "${var.bigip_count}"
 
   provisioner "local-exec" {
     command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-
-    CREDS=${var.bigip_admin}:${random_string.password.result}
-    IP=${element(aws_eip.mgmt.*.public_ip, count.index)}
-
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@$IP 'modify auth user ${var.bigip_admin} password ${random_string.password.result}'
-    ssh -o StrictHostKeyChecking=no ${var.bigip_admin}@$IP 'save sys config'
     until $(curl -ku $CREDS -o /dev/null --silent --fail https://$IP/mgmt/shared/iapp/package-management-tasks);do sleep 10;done
 
     wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm}
     wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm}
+
+    CREDS=${var.bigip_admin}:${random_string.password.result}
+    IP=${element(aws_eip.mgmt.*.public_ip, count.index)}
     do_LEN=$(wc -c ${var.do_rpm} | cut -f 1 -d ' ')
     as3_LEN=$(wc -c ${var.as3_rpm} | cut -f 1 -d ' ')
+    do_DATA="{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"
+    as3_DATA="{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.as3_rpm}\"}"
+
     curl -ku $CREDS https://$IP/mgmt/shared/file-transfer/uploads/${var.do_rpm} -H 'Content-Type: application/octet-stream' -H "Content-Range: 0-$((do_LEN - 1))/$do_LEN" -H "Content-Length: $do_LEN" -H 'Connection: keep-alive' --data-binary @${var.do_rpm}
     curl -ku $CREDS https://$IP/mgmt/shared/file-transfer/uploads/${var.as3_rpm} -H 'Content-Type: application/octet-stream' -H "Content-Range: 0-$((as3_LEN - 1))/$as3_LEN" -H "Content-Length: $as3_LEN" -H 'Connection: keep-alive' --data-binary @${var.as3_rpm}
 
-    do_DATA="{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.do_rpm}\"}"
-    as3_DATA="{\"operation\":\"INSTALL\",\"packageFilePath\":\"/var/config/rest/downloads/${var.as3_rpm}\"}"
     curl -ku $CREDS https://$IP/mgmt/shared/iapp/package-management-tasks -H "Origin: https://$IP" -H 'Content-Type: application/json;charset=UTF-8' --data $do_DATA
     curl -ku $CREDS https://$IP/mgmt/shared/iapp/package-management-tasks -H "Origin: https://$IP" -H 'Content-Type: application/json;charset=UTF-8' --data $as3_DATA
 
-    rm ${var.do_rpm} ${var.as3_rpm}
+    rm ${var.do_rpm}* ${var.as3_rpm}*
     EOF
   }
 }
@@ -245,12 +254,12 @@ data "template_file" "do_data" {
 
   vars {
     host_name   = "${element(aws_instance.bigip.*.private_dns, count.index)}"
-    members     = "${join(", ", aws_instance.bigip.*.private_dns)}"
+    members     = "${join(", ", formatlist("\"%s\"", aws_instance.bigip.*.private_dns))}"
     admin       = "${var.bigip_admin}"
     password    = "${random_string.password.result}" 
-    mgmt_ip     = "${element(aws_network_interface.mgmt.*.private_ip, count.index)}/24"
-    external_ip = "${element(aws_network_interface.external.*.private_ip, count.index)}/24"
-    internal_ip = "${element(aws_network_interface.internal.*.private_ip, count.index)}/24"
+    mgmt_ip     = "${element(aws_network_interface.mgmt.*.private_ip, count.index)}"
+    external_ip = "${element(aws_network_interface.external.*.private_ip, count.index)}"
+    internal_ip = "${element(aws_network_interface.internal.*.private_ip, count.index)}"
   }
 }
 
@@ -285,3 +294,8 @@ output "public_ip" {
 output "password" {
   value = "${random_string.password.result}"
 }
+
+output "testing" {
+  value = "${jsonencode(aws_instance.bigip.0.private_ip)}"
+}
+
