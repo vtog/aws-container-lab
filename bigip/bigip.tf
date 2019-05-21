@@ -225,8 +225,8 @@ resource "null_resource" "tmsh" {
   provisioner "local-exec" {
     command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-    wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm}
-    wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm}
+#    wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm}
+#    wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm}
 
     CREDS=${var.bigip_admin}:${random_string.password.result}
     IP=${element(aws_eip.mgmt.*.public_ip, count.index)}
@@ -243,7 +243,6 @@ resource "null_resource" "tmsh" {
     curl -ku $CREDS https://$IP/mgmt/shared/iapp/package-management-tasks -H "Origin: https://$IP" -H 'Content-Type: application/json;charset=UTF-8' --data $do_DATA
     curl -ku $CREDS https://$IP/mgmt/shared/iapp/package-management-tasks -H "Origin: https://$IP" -H 'Content-Type: application/json;charset=UTF-8' --data $as3_DATA
 
-    rm ${var.do_rpm}* ${var.as3_rpm}*
     EOF
   }
 }
@@ -260,6 +259,7 @@ data "template_file" "do_data" {
     mgmt_ip     = "${element(aws_network_interface.mgmt.*.private_ip, count.index)}"
     external_ip = "${element(aws_network_interface.external.*.private_ip, count.index)}"
     internal_ip = "${element(aws_network_interface.internal.*.private_ip, count.index)}"
+    test        = "${element(aws_network_interface.internal.*.private_ip, count.index)}"
   }
 }
 

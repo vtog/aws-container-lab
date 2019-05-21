@@ -54,7 +54,7 @@
                     "class": "SelfIp",
                     "address": "${internal_ip}/24",
                     "vlan": "internal",
-                    "allowService": "none",
+                    "allowService": "all",
                     "trafficGroup": "traffic-group-local-only"
                 },
                 "configsync": {
@@ -80,7 +80,7 @@
                     "class": "DeviceTrust",
                     "localUsername": "${admin}",
                     "localPassword": "${password}",
-                    "remoteHost": "${mgmt_ip}",
+                    "remoteHost": "/Common/failoverGroup/members/0",
                     "remoteUsername": "${admin}",
                     "remotePassword": "${password}"
                 }
