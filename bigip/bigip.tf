@@ -150,7 +150,7 @@ resource "aws_network_interface" "internal" {
 
 resource "aws_eip" "mgmt" {
   vpc               = true
-  depends_on        = ["aws_network_interface.mgmt", "aws_instance.bigip"]
+  depends_on        = ["aws_network_interface.mgmt"]
   count             = "${var.bigip_count}"
   network_interface = "${element(aws_network_interface.mgmt.*.id, count.index)}"
 
@@ -162,7 +162,7 @@ resource "aws_eip" "mgmt" {
 
 resource "aws_eip" "external" {
   vpc               = true
-  depends_on        = ["aws_network_interface.external", "aws_instance.bigip"]
+  depends_on        = ["aws_network_interface.external"]
   count             = "${var.bigip_count}"
   network_interface = "${element(aws_network_interface.external.*.id, count.index)}"
 
@@ -181,6 +181,7 @@ resource "random_string" "password" {
 resource "aws_instance" "bigip" {
   ami           = "${data.aws_ami.f5_ami.id}"
   instance_type = "${var.instance_type}"
+  depends_on    = ["aws_network_interface.mgmt", "aws_network_interface.external","aws_network_interface.internal" ]
   count         = "${var.bigip_count}"
   key_name      = "${var.key_name}"
 
