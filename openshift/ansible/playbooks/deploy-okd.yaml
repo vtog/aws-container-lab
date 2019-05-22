@@ -1,7 +1,7 @@
 ---
 
 - name: Prep CentOS
-  hosts: okd-all
+  hosts: all
   become: yes
   tasks:
   - import_tasks: update-hosts.yaml
@@ -9,7 +9,7 @@
   - import_tasks: prep-all.yaml
 
 - name: Prep Master
-  hosts: okd-masters
+  hosts: masters
   become: yes
   gather_facts: no
   tasks:

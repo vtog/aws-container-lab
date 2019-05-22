@@ -98,15 +98,15 @@ resource "aws_security_group" "okd_sg" {
 # write out centos inventory
 data "template_file" "inventory" {
   template = <<EOF
-[okd-all]
+[all]
 ${aws_instance.okd-master1.tags.Name} ansible_host=${aws_instance.okd-master1.public_ip} private_ip=${aws_instance.okd-master1.private_ip}
 ${aws_instance.okd-node1.tags.Name} ansible_host=${aws_instance.okd-node1.public_ip} private_ip=${aws_instance.okd-node1.private_ip}
 ${aws_instance.okd-node2.tags.Name} ansible_host=${aws_instance.okd-node2.public_ip} private_ip=${aws_instance.okd-node2.private_ip}
 
-[okd-masters]
+[masters]
 ${aws_instance.okd-master1.tags.Name} ansible_host=${aws_instance.okd-master1.public_ip}
 
-[okd-nodes]
+[nodes]
 ${aws_instance.okd-node1.tags.Name} ansible_host=${aws_instance.okd-node1.public_ip}
 ${aws_instance.okd-node2.tags.Name} ansible_host=${aws_instance.okd-node2.public_ip}
 
@@ -174,6 +174,9 @@ resource "local_file" "save_inventory-okd" {
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
     working_dir = "./openshift/ansible/"
-    command     = "aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id} --profile vtog && ansible-playbook ./playbooks/deploy-okd.yaml"
+    command     = <<EOF
+    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id}
+    ansible-playbook ./playbooks/deploy-okd.yaml
+    EOF
   }
 }

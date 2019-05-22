@@ -33,6 +33,7 @@
 - name: Install kubelet kubeadm kubectl
   apt:
     name: "{{ packages }}"
+    force_apt_get: yes
     update_cache: yes
     state: present
   vars:

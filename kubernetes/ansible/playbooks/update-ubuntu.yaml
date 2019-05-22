@@ -15,3 +15,5 @@
 - name: Reboot system if required
   when: reboot_node is changed
   reboot:
+    post_reboot_delay: 180
+    reboot_timeout: 900

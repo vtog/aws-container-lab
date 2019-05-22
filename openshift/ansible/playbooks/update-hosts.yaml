@@ -10,4 +10,4 @@
     insertafter: EOF
     line: '{{ hostvars[item].private_ip }} {{ item }}'
     state: present
-  with_items: '{{ groups["okd-all"] }}'
+  with_items: '{{ groups["all"] }}'

@@ -86,15 +86,15 @@ resource "aws_security_group" "kube_sg" {
 # write out kube inventory
 data "template_file" "inventory" {
   template = <<EOF
-[kube-all]
+[all]
 ${aws_instance.kube-master1.tags.Name} ansible_host=${aws_instance.kube-master1.public_ip} private_ip=${aws_instance.kube-master1.private_ip}
 ${aws_instance.kube-node1.tags.Name} ansible_host=${aws_instance.kube-node1.public_ip} private_ip=${aws_instance.kube-node1.private_ip}
 ${aws_instance.kube-node2.tags.Name} ansible_host=${aws_instance.kube-node2.public_ip} private_ip=${aws_instance.kube-node2.private_ip}
 
-[kube-masters]
+[masters]
 ${aws_instance.kube-master1.tags.Name} ansible_host=${aws_instance.kube-master1.public_ip}
 
-[kube-nodes]
+[nodes]
 ${aws_instance.kube-node1.tags.Name} ansible_host=${aws_instance.kube-node1.public_ip}
 ${aws_instance.kube-node2.tags.Name} ansible_host=${aws_instance.kube-node2.public_ip}
 
@@ -114,6 +114,9 @@ resource "local_file" "save_inventory" {
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
     working_dir = "./kubernetes/ansible/"
-    command     = "aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id} --profile vtog && ansible-playbook ./playbooks/deploy-kube.yaml"
+    command     = <<EOF
+    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id}
+    ansible-playbook ./playbooks/deploy-kube.yaml
+    EOF
   }
 }
