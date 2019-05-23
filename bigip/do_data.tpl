@@ -65,11 +65,11 @@
                     "class": "FailoverUnicast",
                     "address": "/Common/internal-self/address"
                 },
-                "failoverGroup": {
+                "device-group-1": {
                     "class": "DeviceGroup",
                     "type": "sync-failover",
                     "members": [${members}],
-                    "owner": "/Common/failoverGroup/members/0",
+                    "owner": "//Common/device-group-1/members/0",
                     "autoSync": true,
                     "saveOnAutoSync": false,
                     "networkFailover": true,
@@ -80,9 +80,14 @@
                     "class": "DeviceTrust",
                     "localUsername": "${admin}",
                     "localPassword": "${password}",
-                    "remoteHost": "/Common/failoverGroup/members/0",
+                    "remoteHost": "/Common/device-group-1/members/0",
                     "remoteUsername": "${admin}",
                     "remotePassword": "${password}"
+                },
+                "dbvars": {
+                    "class": "DbVariables",
+                    "ui.system.preferences.recordsperscreen": "100",
+                    "ui.system.preferences.advancedselection": "advanced"
                 }
         }
 }
