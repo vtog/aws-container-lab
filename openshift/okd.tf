@@ -188,9 +188,9 @@ resource "null_resource" "okd" {
 
   provisioner "remote-exec" {
     connection {
-      host = "${aws_instance.okd-master1.public_ip}"
-      type = "ssh"
-      user = "centos"
+      host        = "${aws_instance.okd-master1.public_ip}"
+      type        = "ssh"
+      user        = "centos"
       private_key = "${file("~/.ssh/id_rsa")}"
     }
 
