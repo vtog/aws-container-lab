@@ -174,9 +174,31 @@ resource "local_file" "save_inventory-okd" {
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
     working_dir = "./openshift/ansible/"
-    command     = <<EOF
+
+    command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id}
     ansible-playbook ./playbooks/deploy-okd.yaml
     EOF
+  }
+}
+
+#----- Install OpenShift -----
+resource "null_resource" "okd" {
+  depends_on = ["null_resource.ansible"]
+
+  provisioner "remote-exec" {
+    connection {
+      host = "${aws_instance.okd-master1.public_ip}"
+      type = "ssh"
+      user = "centos"
+      private_key = "${file("~/.ssh/id_rsa")}"
+    }
+
+    inline = [
+      "ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml",
+      "ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml",
+      "sudo htpasswd -b /etc/origin/master/htpasswd centos centos",
+      "oc adm policy add-cluster-role-to-user cluster-admin centos",
+    ]
   }
 }
