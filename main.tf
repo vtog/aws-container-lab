@@ -195,7 +195,6 @@ module "kube" {
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 }
 
-
 #----- Deploy OpenShift -----
 module "okd" {
   source        = "./openshift"
@@ -209,4 +208,3 @@ module "okd" {
   vpc_cidr      = "${var.vpc_cidr}"
   vpc_subnet    = ["${aws_subnet.external1_subnet.id}", "${aws_subnet.external2_subnet.id}"]
 }
-

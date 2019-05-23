@@ -41,8 +41,8 @@ commands:
 
 .. code-block:: bash
 
-   ansible-playbook -i $HOME/agilitydocs/openshift/ansible/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml
-   ansible-playbook -i $HOME/agilitydocs/openshift/ansible/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml
+   ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml
+   ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml
 
    sudo htpasswd -b /etc/origin/master/htpasswd centos centos
    oc adm policy add-cluster-role-to-user cluster-admin centos

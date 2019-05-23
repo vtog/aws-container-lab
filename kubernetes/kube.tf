@@ -114,7 +114,8 @@ resource "local_file" "save_inventory" {
 resource "null_resource" "ansible" {
   provisioner "local-exec" {
     working_dir = "./kubernetes/ansible/"
-    command     = <<EOF
+
+    command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id}
     ansible-playbook ./playbooks/deploy-kube.yaml
     EOF
