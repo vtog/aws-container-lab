@@ -35,22 +35,11 @@ preps the OpenShift nodes.
    cd aws-container-lab
    terraform apply
 
-Additional steps are required for OpenShift. Once the playbooks from the
-previous steps are finished connect to **okd-master1** and run the following
-commands:
-
-.. code-block:: bash
-
-   ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml
-   ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml
-
-   sudo htpasswd -b /etc/origin/master/htpasswd centos centos
-   oc adm policy add-cluster-role-to-user cluster-admin centos
-
 After completion you can lookup the bigip1 mgmt url and passwd.
 
 .. code-block:: bash
 
+   terraform refresh
    terraform output
 
 To completly remove the AWS instances and supporting objects, change directory
