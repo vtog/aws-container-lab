@@ -14,11 +14,11 @@ data "aws_ami" "centos_ami" {
 }
 
 resource "aws_instance" "okd-master1" {
-  ami                    = "${data.aws_ami.centos_ami.id}"
-  instance_type          = "${var.instance_type}"
-  key_name               = "${var.key_name}"
-  vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
-  subnet_id              = "${var.vpc_subnet[0]}"
+  ami                    = data.aws_ami.centos_ami.id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.okd_sg.id]
+  subnet_id              = var.vpc_subnet[0]
 
   root_block_device {
     delete_on_termination = true
@@ -31,11 +31,11 @@ resource "aws_instance" "okd-master1" {
 }
 
 resource "aws_instance" "okd-node1" {
-  ami                    = "${data.aws_ami.centos_ami.id}"
-  instance_type          = "${var.instance_type}"
-  key_name               = "${var.key_name}"
-  vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
-  subnet_id              = "${var.vpc_subnet[0]}"
+  ami                    = data.aws_ami.centos_ami.id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.okd_sg.id]
+  subnet_id              = var.vpc_subnet[0]
 
   root_block_device {
     delete_on_termination = true
@@ -48,11 +48,11 @@ resource "aws_instance" "okd-node1" {
 }
 
 resource "aws_instance" "okd-node2" {
-  ami                    = "${data.aws_ami.centos_ami.id}"
-  instance_type          = "${var.instance_type}"
-  key_name               = "${var.key_name}"
-  vpc_security_group_ids = ["${aws_security_group.okd_sg.id}"]
-  subnet_id              = "${var.vpc_subnet[1]}"
+  ami                    = data.aws_ami.centos_ami.id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.okd_sg.id]
+  subnet_id              = var.vpc_subnet[1]
 
   root_block_device {
     delete_on_termination = true
@@ -66,20 +66,20 @@ resource "aws_instance" "okd-node2" {
 
 resource "aws_security_group" "okd_sg" {
   name   = "okd_sg"
-  vpc_id = "${var.vpc_id}"
+  vpc_id = var.vpc_id
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${var.myIP}"]
+    cidr_blocks = [var.myIP]
   }
 
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   egress {
@@ -114,6 +114,7 @@ ${aws_instance.okd-node2.tags.Name} ansible_host=${aws_instance.okd-node2.public
 ansible_user=centos
 ansible_python_interpreter=/usr/bin/python2
 EOF
+
 }
 
 # write out okd inventory
@@ -156,49 +157,53 @@ openshift_master_console_port=8443
 openshift_metrics_install_metrics=false
 openshift_logging_install_logging=false
 EOF
+
 }
 
 resource "local_file" "save_inventory" {
-  depends_on = ["data.template_file.inventory"]
-  content    = "${data.template_file.inventory.rendered}"
-  filename   = "./openshift/ansible/inventory.ini"
+depends_on = [data.template_file.inventory]
+content    = data.template_file.inventory.rendered
+filename   = "./openshift/ansible/inventory.ini"
 }
 
 resource "local_file" "save_inventory-okd" {
-  depends_on = ["data.template_file.inventory-okd"]
-  content    = "${data.template_file.inventory-okd.rendered}"
-  filename   = "./openshift/ansible/inventory-okd.ini"
+depends_on = [data.template_file.inventory-okd]
+content    = data.template_file.inventory-okd.rendered
+filename   = "./openshift/ansible/inventory-okd.ini"
 }
 
 #----- Run Ansible Playbook -----
 resource "null_resource" "ansible" {
-  provisioner "local-exec" {
-    working_dir = "./openshift/ansible/"
+provisioner "local-exec" {
+working_dir = "./openshift/ansible/"
 
-    command = <<EOF
+command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.okd-master1.id} ${aws_instance.okd-node1.id} ${aws_instance.okd-node2.id}
     ansible-playbook ./playbooks/deploy-okd.yaml
-    EOF
-  }
+    
+EOF
+
+}
 }
 
 #----- Install OpenShift -----
 resource "null_resource" "okd" {
-  depends_on = ["null_resource.ansible"]
+depends_on = [null_resource.ansible]
 
-  provisioner "remote-exec" {
-    connection {
-      host        = "${aws_instance.okd-master1.public_ip}"
-      type        = "ssh"
-      user        = "centos"
-      private_key = "${file("~/.ssh/id_rsa")}"
-    }
-
-    inline = [
-      "ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml",
-      "ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml",
-      "sudo htpasswd -b /etc/origin/master/htpasswd centos centos",
-      "oc adm policy add-cluster-role-to-user cluster-admin centos",
-    ]
-  }
+provisioner "remote-exec" {
+connection {
+host = aws_instance.okd-master1.public_ip
+type = "ssh"
+user = "centos"
+private_key = file("~/.ssh/id_rsa")
 }
+
+inline = [
+"ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/prerequisites.yml",
+"ansible-playbook -i $HOME/inventory.ini $HOME/openshift-ansible/playbooks/deploy_cluster.yml",
+"sudo htpasswd -b /etc/origin/master/htpasswd centos centos",
+"oc adm policy add-cluster-role-to-user cluster-admin centos",
+]
+}
+}
+
