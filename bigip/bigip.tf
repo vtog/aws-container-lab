@@ -235,8 +235,8 @@ resource "null_resource" "tmsh" {
   provisioner "local-exec" {
     command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-#    wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm}
-#    wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm}
+    wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm} -O ${var.do_rpm}
+    wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm} -O ${var.as3_rpm}
 
     CREDS=${var.bigip_admin}:${random_string.password.result}
     IP=${element(aws_eip.mgmt.*.public_ip, count.index)}
