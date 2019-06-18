@@ -25,5 +25,6 @@ bigip_ami_name_filt = "F5 Networks BIGIP-14.0* PAYG - Best 25M*"
 #bigip_ami_name_filt = "F5 Networks BIGIP-13.1* PAYG - Best 25M*"
 #bigip_ami_name_filt = "F5 Networks Licensed Hourly BIGIP-12.1* Best 25M*"
 bigip_admin = "admin"
-do_rpm      = "f5-declarative-onboarding-1.4.1-1.noarch.rpm"
-as3_rpm     = "f5-appsvcs-3.11.0-3.noarch.rpm"
+do_rpm      = "f5-declarative-onboarding-1.5.0-11.noarch.rpm"
+as3_rpm     = "f5-appsvcs-3.12.0-5.noarch.rpm"
+
