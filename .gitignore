@@ -3,3 +3,6 @@
 terraform.tfstate*
 .inventory*
 inventory*
+*swp
+*.rpm
+

@@ -1,10 +1,10 @@
-variable "myIP" {
-}
-
 variable "aws_region" {
 }
 
 variable "aws_profile" {
+}
+
+variable "myIP" {
 }
 
 variable "key_name" {

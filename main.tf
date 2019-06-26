@@ -66,18 +66,6 @@ resource "aws_subnet" "mgmt1_subnet" {
   }
 }
 
-resource "aws_subnet" "mgmt2_subnet" {
-  vpc_id                  = aws_vpc.lab_vpc.id
-  cidr_block              = var.cidrs["mgmt2"]
-  map_public_ip_on_launch = true
-  availability_zone       = data.aws_availability_zones.available.names[1]
-
-  tags = {
-    Name = "lab_mgmt2"
-    Lab  = "Containers"
-  }
-}
-
 resource "aws_subnet" "external1_subnet" {
   vpc_id                  = aws_vpc.lab_vpc.id
   cidr_block              = var.cidrs["external1"]
@@ -86,18 +74,6 @@ resource "aws_subnet" "external1_subnet" {
 
   tags = {
     Name = "lab_external1"
-    Lab  = "Containers"
-  }
-}
-
-resource "aws_subnet" "external2_subnet" {
-  vpc_id                  = aws_vpc.lab_vpc.id
-  cidr_block              = var.cidrs["external2"]
-  map_public_ip_on_launch = true
-  availability_zone       = data.aws_availability_zones.available.names[1]
-
-  tags = {
-    Name = "lab_external2"
     Lab  = "Containers"
   }
 }
@@ -114,25 +90,8 @@ resource "aws_subnet" "internal1_subnet" {
   }
 }
 
-resource "aws_subnet" "internal2_subnet" {
-  vpc_id                  = aws_vpc.lab_vpc.id
-  cidr_block              = var.cidrs["internal2"]
-  map_public_ip_on_launch = false
-  availability_zone       = data.aws_availability_zones.available.names[1]
-
-  tags = {
-    Name = "lab_internal2"
-    Lab  = "Containers"
-  }
-}
-
 resource "aws_route_table_association" "lab_mgmt1_assoc" {
   subnet_id      = aws_subnet.mgmt1_subnet.id
-  route_table_id = aws_route_table.lab_public_rt.id
-}
-
-resource "aws_route_table_association" "lab_mgmt2_assoc" {
-  subnet_id      = aws_subnet.mgmt2_subnet.id
   route_table_id = aws_route_table.lab_public_rt.id
 }
 
@@ -141,18 +100,8 @@ resource "aws_route_table_association" "lab_external1_assoc" {
   route_table_id = aws_route_table.lab_public_rt.id
 }
 
-resource "aws_route_table_association" "lab_external2_assoc" {
-  subnet_id      = aws_subnet.external2_subnet.id
-  route_table_id = aws_route_table.lab_public_rt.id
-}
-
 resource "aws_route_table_association" "lab_internal1_assoc" {
   subnet_id      = aws_subnet.internal1_subnet.id
-  route_table_id = aws_default_route_table.lab_private_rt.id
-}
-
-resource "aws_route_table_association" "lab_internal2_assoc" {
-  subnet_id      = aws_subnet.internal2_subnet.id
   route_table_id = aws_default_route_table.lab_private_rt.id
 }
 
@@ -178,7 +127,7 @@ module "bigip" {
   as3_rpm             = var.as3_rpm
   vpc_id              = aws_vpc.lab_vpc.id
   vpc_cidr            = var.vpc_cidr
-  vpc_subnet          = [aws_subnet.mgmt1_subnet.id, aws_subnet.mgmt2_subnet.id, aws_subnet.external1_subnet.id, aws_subnet.external2_subnet.id, aws_subnet.internal1_subnet.id, aws_subnet.internal2_subnet.id]
+  vpc_subnet          = [aws_subnet.mgmt1_subnet.id, aws_subnet.external1_subnet.id, aws_subnet.internal1_subnet.id]
 }
 
 #----- Deploy Kubernetes -----
@@ -189,23 +138,23 @@ module "kube" {
   myIP          = "${chomp(data.http.myIP.body)}/32"
   key_name      = var.key_name
   instance_type = var.kube_instance_type
-  kube_count    = var.bigip_count
+  kube_count    = var.kube_count
   vpc_id        = aws_vpc.lab_vpc.id
   vpc_cidr      = var.vpc_cidr
-  vpc_subnet    = [aws_subnet.external1_subnet.id, aws_subnet.external2_subnet.id]
+  vpc_subnet    = [aws_subnet.external1_subnet.id]
 }
 
 #----- Deploy OpenShift -----
-module "okd" {
-  source        = "./openshift"
-  aws_region    = var.aws_region
-  aws_profile   = var.aws_profile
-  myIP          = "${chomp(data.http.myIP.body)}/32"
-  key_name      = var.key_name
-  instance_type = var.okd_instance_type
-  okd_count     = var.bigip_count
-  vpc_id        = aws_vpc.lab_vpc.id
-  vpc_cidr      = var.vpc_cidr
-  vpc_subnet    = [aws_subnet.external1_subnet.id, aws_subnet.external2_subnet.id]
-}
+#module "okd" {
+#  source        = "./openshift"
+#  aws_region    = var.aws_region
+#  aws_profile   = var.aws_profile
+#  myIP          = "${chomp(data.http.myIP.body)}/32"
+#  key_name      = var.key_name
+#  instance_type = var.okd_instance_type
+#  okd_count     = var.okd_count
+#  vpc_id        = aws_vpc.lab_vpc.id
+#  vpc_cidr      = var.vpc_cidr
+#  vpc_subnet    = [aws_subnet.external1_subnet.id]
+#}
 

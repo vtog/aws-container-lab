@@ -4,51 +4,12 @@ data "aws_ami" "ubuntu_ami" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-*-amd64*"]
   }
 
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
-  }
-}
-
-resource "aws_instance" "kube-master1" {
-  ami                    = data.aws_ami.ubuntu_ami.id
-  instance_type          = var.instance_type
-  key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.kube_sg.id]
-  subnet_id              = var.vpc_subnet[0]
-
-  tags = {
-    Name = "kube-master1"
-    Lab  = "Containers"
-  }
-}
-
-resource "aws_instance" "kube-node1" {
-  ami                    = data.aws_ami.ubuntu_ami.id
-  instance_type          = var.instance_type
-  key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.kube_sg.id]
-  subnet_id              = var.vpc_subnet[0]
-
-  tags = {
-    Name = "kube-node1"
-    Lab  = "Containers"
-  }
-}
-
-resource "aws_instance" "kube-node2" {
-  ami                    = data.aws_ami.ubuntu_ami.id
-  instance_type          = var.instance_type
-  key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.kube_sg.id]
-  subnet_id              = var.vpc_subnet[1]
-
-  tags = {
-    Name = "kube-node2"
-    Lab  = "Containers"
   }
 }
 
@@ -83,20 +44,37 @@ resource "aws_security_group" "kube_sg" {
   }
 }
 
+resource "aws_instance" "kube" {
+  ami                    = data.aws_ami.ubuntu_ami.id
+  instance_type          = var.instance_type
+  count                  = var.kube_count
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.kube_sg.id]
+  subnet_id              = var.vpc_subnet[0]
+
+  tags = {
+    Name = "${count.index == 0 ? "kube-master1" : "kube-node${count.index}"}"
+    Lab  = "Containers"
+  }
+}
+
 # write out kube inventory
 data "template_file" "inventory" {
   template = <<EOF
 [all]
-${aws_instance.kube-master1.tags.Name} ansible_host=${aws_instance.kube-master1.public_ip} private_ip=${aws_instance.kube-master1.private_ip}
-${aws_instance.kube-node1.tags.Name} ansible_host=${aws_instance.kube-node1.public_ip} private_ip=${aws_instance.kube-node1.private_ip}
-${aws_instance.kube-node2.tags.Name} ansible_host=${aws_instance.kube-node2.public_ip} private_ip=${aws_instance.kube-node2.private_ip}
+%{ for instance in aws_instance.kube ~}
+${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.private_ip}
+%{ endfor ~}
 
 [masters]
-${aws_instance.kube-master1.tags.Name} ansible_host=${aws_instance.kube-master1.public_ip}
+%{ for instance in aws_instance.kube ~}
+%{ if substr(instance.tags.Name, 5, 6) == "master" }${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.private_ip}%{ endif }
+%{ endfor ~}
 
 [nodes]
-${aws_instance.kube-node1.tags.Name} ansible_host=${aws_instance.kube-node1.public_ip}
-${aws_instance.kube-node2.tags.Name} ansible_host=${aws_instance.kube-node2.public_ip}
+%{ for instance in aws_instance.kube ~}
+%{ if substr(instance.tags.Name, 5, 4) == "node" }${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.private_ip}%{ endif }
+%{ endfor ~}
 
 [all:vars]
 ansible_user=ubuntu
@@ -117,11 +95,19 @@ resource "null_resource" "ansible" {
     working_dir = "./kubernetes/ansible/"
 
     command = <<EOF
-    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${aws_instance.kube-master1.id} ${aws_instance.kube-node1.id} ${aws_instance.kube-node2.id}
+    aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${join(" ", aws_instance.kube.*.id)}
     ansible-playbook ./playbooks/deploy-kube.yaml
-    
-EOF
-
+    EOF
+  }
 }
+
+#-------- ubuntu output --------
+
+output "public_ip" {
+  value = formatlist(
+  "%s = %s ",
+  aws_instance.kube.*.tags.Name,
+  aws_instance.kube.*.public_ip
+  )
 }
 

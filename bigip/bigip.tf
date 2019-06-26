@@ -126,7 +126,7 @@ resource "aws_network_interface" "mgmt" {
 
 resource "aws_network_interface" "external" {
   count             = var.bigip_count
-  subnet_id         = var.vpc_subnet[2]
+  subnet_id         = var.vpc_subnet[1]
   security_groups   = [aws_security_group.bigip_external_sg.id]
   private_ips_count = 1
 
@@ -138,7 +138,7 @@ resource "aws_network_interface" "external" {
 
 resource "aws_network_interface" "internal" {
   count             = var.bigip_count
-  subnet_id         = var.vpc_subnet[4]
+  subnet_id         = var.vpc_subnet[2]
   security_groups   = [aws_security_group.bigip_internal_sg.id]
   private_ips_count = 1
 
@@ -196,13 +196,13 @@ data "template_file" "cloudinit_data" {
 resource "aws_instance" "bigip" {
   ami           = data.aws_ami.f5_ami.id
   instance_type = var.instance_type
+  count         = var.bigip_count
+  key_name      = var.key_name
   depends_on = [
     aws_network_interface.mgmt,
     aws_network_interface.external,
     aws_network_interface.internal,
   ]
-  count    = var.bigip_count
-  key_name = var.key_name
 
   network_interface {
     network_interface_id = element(aws_network_interface.mgmt.*.id, count.index)
@@ -297,22 +297,22 @@ EOF
 #-------- bigip output --------
 
 output "public_dns" {
-value = formatlist(
-"%s = https://%s",
-aws_instance.bigip.*.tags.Name,
-aws_instance.bigip.*.public_dns,
-)
+  value = formatlist(
+  "%s = https://%s",
+  aws_instance.bigip.*.tags.Name,
+  aws_instance.bigip.*.public_dns,
+  )
 }
 
 output "public_ip" {
-value = formatlist(
-"%s = %s ",
-aws_instance.bigip.*.tags.Name,
-aws_instance.bigip.*.public_ip,
-)
+  value = formatlist(
+  "%s = %s ",
+  aws_instance.bigip.*.tags.Name,
+  aws_instance.bigip.*.public_ip,
+  )
 }
 
 output "password" {
-value = random_string.password.result
+  value = random_string.password.result
 }
 

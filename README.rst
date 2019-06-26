@@ -19,7 +19,7 @@ Several assumptions are made:
 
 - Familiarity with
 
-  #. Terraform
+  #. Terraform (updated for .12)
   #. Ansible
   #. AWS CLI
   #. Big-IP
