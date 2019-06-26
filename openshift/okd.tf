@@ -72,7 +72,7 @@ ${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.p
 
 [masters]
 %{ for instance in aws_instance.okd ~}
-%{ if substr(instance.tags.Name, 4, 6) == "master" }${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.private_ip}%{ else }trimspace()%{ endif }
+%{ if substr(instance.tags.Name, 4, 6) == "master" }${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.private_ip}%{ endif }
 %{ endfor ~}
 
 [nodes]
@@ -83,8 +83,14 @@ ${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.p
 [all:vars]
 ansible_user=centos
 ansible_python_interpreter=/usr/bin/python2
-EOF
 
+EOF
+}
+
+resource "local_file" "save_inventory" {
+  depends_on = [data.template_file.inventory]
+  content    = data.template_file.inventory.rendered
+  filename   = "./openshift/ansible/inventory.ini"
 }
 
 # write out okd inventory
@@ -111,7 +117,6 @@ etcd
 %{ if substr(instance.tags.Name, 4, 4) == "node" }${instance.tags.Name} openshift_public_hostname=${instance.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-compute"%{ endif }
 %{ endfor ~}
 
-
 [OSEv3:vars]
 ansible_ssh_user=centos
 ansible_become=true
@@ -132,14 +137,8 @@ openshift_master_console_port=8443
 
 openshift_metrics_install_metrics=false
 openshift_logging_install_logging=false
+
 EOF
-
-}
-
-resource "local_file" "save_inventory" {
-  depends_on = [data.template_file.inventory]
-  content    = data.template_file.inventory.rendered
-  filename   = "./openshift/ansible/inventory.ini"
 }
 
 resource "local_file" "save_inventory-okd" {
