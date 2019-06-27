@@ -1,17 +1,21 @@
 #--------root/outputs.tf--------
-output "Admin_URL" {
+output "BIGIP_Admin_URL" {
   value = module.bigip.public_dns
 }
 
-output "Mgmt_IP" {
+output "BIIGP_Mgmt_IP" {
   value = module.bigip.public_ip
 }
 
-output "Admin_Password" {
+output "BIGIP_Admin_Password" {
   value = module.bigip.password
 }
 
-output "Kube_Cluster_IPs" {
+output "KUBE_Cluster_IPs" {
+  value = module.kube.public_ip
+}
+
+output "OKD_Cluster_IPs" {
   value = module.kube.public_ip
 }
 
