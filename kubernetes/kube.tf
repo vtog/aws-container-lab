@@ -101,7 +101,7 @@ resource "null_resource" "ansible" {
   }
 }
 
-#-------- ubuntu output --------
+#-------- kube output --------
 
 output "public_ip" {
   value = formatlist(

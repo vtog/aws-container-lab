@@ -113,8 +113,7 @@ etcd
 
 [nodes]
 %{ for instance in aws_instance.okd ~}
-%{ if substr(instance.tags.Name, 4, 6) == "master" }${instance.tags.Name} openshift_public_hostname=${instance.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-master-infra"%{ endif }
-%{ if substr(instance.tags.Name, 4, 4) == "node" }${instance.tags.Name} openshift_public_hostname=${instance.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-compute"%{ endif }
+%{ if substr(instance.tags.Name, 4, 6) == "master" }${instance.tags.Name} openshift_public_hostname=${instance.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-master-infra"%{ else }${instance.tags.Name} openshift_public_hostname=${instance.tags.Name} openshift_schedulable=true openshift_node_group_name="node-config-compute"%{ endif }
 %{ endfor ~}
 
 [OSEv3:vars]
@@ -176,5 +175,15 @@ resource "null_resource" "okd" {
     "oc adm policy add-cluster-role-to-user cluster-admin centos",
     ]
   }
+}
+
+#-------- okd output --------
+
+output "public_ip" {
+  value = formatlist(
+  "%s = %s ",
+  aws_instance.okd.*.tags.Name,
+  aws_instance.okd.*.public_ip
+  )
 }
 
