@@ -181,7 +181,7 @@ resource "null_resource" "okd" {
 
 output "public_ip" {
   value = formatlist(
-  "%s = %s ",
+  "%s = %s",
   aws_instance.okd.*.tags.Name,
   aws_instance.okd.*.public_ip
   )

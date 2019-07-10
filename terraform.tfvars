@@ -10,7 +10,7 @@ cidrs = {
 
 key_name            = "container-lab-key"
 public_key_path     = "~/.ssh/id_rsa.pub"
-kube_instance_type  = "t2.medium"
+kube_instance_type  = "t3.medium"
 kube_count          = 3
 okd_instance_type   = "t3.medium"
 okd_count           = 3

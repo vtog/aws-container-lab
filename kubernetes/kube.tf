@@ -105,7 +105,7 @@ resource "null_resource" "ansible" {
 
 output "public_ip" {
   value = formatlist(
-  "%s = %s ",
+  "%s = %s",
   aws_instance.kube.*.tags.Name,
   aws_instance.kube.*.public_ip
   )

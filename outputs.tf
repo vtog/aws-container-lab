@@ -16,6 +16,6 @@ output "KUBE_Cluster_IPs" {
 }
 
 output "OKD_Cluster_IPs" {
-  value = module.kube.public_ip
+  value = module.okd.public_ip
 }
 

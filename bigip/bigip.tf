@@ -303,7 +303,7 @@ output "public_dns" {
 
 output "public_ip" {
   value = formatlist(
-  "%s = %s ",
+  "%s = %s",
   aws_instance.bigip.*.tags.Name,
   aws_instance.bigip.*.public_ip,
   )
