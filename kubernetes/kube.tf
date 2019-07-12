@@ -66,6 +66,11 @@ resource "aws_instance" "kube" {
   vpc_security_group_ids = [aws_security_group.kube_sg.id]
   subnet_id              = var.vpc_subnet[0]
 
+  root_block_device {
+    volume_size           = 20
+    delete_on_termination = true
+  }
+
   tags = {
     Name = "${count.index == 0 ? "kube-master1" : "kube-node${count.index}"}"
     Lab  = "Containers"

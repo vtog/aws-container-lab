@@ -67,6 +67,7 @@ resource "aws_instance" "okd" {
   subnet_id              = var.vpc_subnet[0]
 
   root_block_device {
+    volume_size           = 20
     delete_on_termination = true
   }
 
