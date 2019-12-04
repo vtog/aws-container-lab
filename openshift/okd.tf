@@ -97,7 +97,7 @@ ${instance.tags.Name} ansible_host=${instance.public_ip} private_ip=${instance.p
 
 [all:vars]
 ansible_user=centos
-ansible_python_interpreter=/usr/bin/python2
+ansible_playbook_python=/usr/bin/python3
 
 EOF
 }
