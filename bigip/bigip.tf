@@ -242,8 +242,8 @@ resource "null_resource" "tmsh" {
   provisioner "local-exec" {
     command = <<EOF
     aws ec2 wait instance-status-ok --region ${var.aws_region} --profile ${var.aws_profile} --instance-ids ${element(aws_instance.bigip.*.id, count.index)}
-    wget -q https://raw.githubusercontent.com/F5Networks/f5-declarative-onboarding/master/dist/${var.do_rpm} -O ${var.do_rpm}
-    wget -q https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/dist/latest/${var.as3_rpm} -O ${var.as3_rpm}
+    wget -q https://github.com/F5Networks/f5-declarative-onboarding/releases/download/v1.9.0/${var.do_rpm} -O ${var.do_rpm}
+    wget -q https://github.com/F5Networks/f5-appsvcs-extension/releases/download/v3.16.0/${var.as3_rpm} -O ${var.as3_rpm}
 
     CREDS=${var.bigip_admin}:${random_string.password.result}
     IP=${element(aws_eip.mgmt.*.public_ip, count.index)}
@@ -273,6 +273,7 @@ data "template_file" "do_data" {
     members = join(", ", formatlist("\"%s\"", aws_instance.bigip.*.private_dns))
     admin = var.bigip_admin
     password = random_string.password.result
+    aws_dns = cidrhost(var.vpc_cidr, 2)
     mgmt_ip = element(aws_network_interface.mgmt.*.private_ip, count.index)
     external_ip = element(aws_network_interface.external.*.private_ip, count.index)
     internal_ip = element(aws_network_interface.internal.*.private_ip, count.index)
