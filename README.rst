@@ -26,6 +26,13 @@ Several assumptions are made:
   #. Kubernetes
   #. OpenShift
 
+- Example to show how to find an AMI via AWS CLI. The filter variables can be
+  found in tfvars:
+
+  .. code-block:: bash
+
+     aws ec2 describe-images --owners aws-marketplace --filters "Name=product-code,Values=3ouya04g99e5euh4vbxtao1jz" "Name=name,Values=F5 BIGIP-15.1* PAYG-Best 25M*"
+
 The following steps build the AWS EC2 instances, the kubernetes cluster, and
 preps the OpenShift nodes.
 
